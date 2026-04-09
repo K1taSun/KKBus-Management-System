@@ -1,6 +1,5 @@
 # KKBus - Zintegrowany System Zarządzania Firmą Transportową
 
-![Status Projektu](https://img.shields.io/badge/status-Etap%20III%3A%20Implementacja-blue)
 ![Licencja](https://img.shields.io/badge/licencja-MIT-green)
 ![Technologie](https://img.shields.io/badge/stack-NestJS%20%7C%20PostgreSQL%20%7C%20Docker-orange)
 
