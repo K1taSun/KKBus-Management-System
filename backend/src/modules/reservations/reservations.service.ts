@@ -69,18 +69,39 @@ export class ReservationsService {
     await queryRunner.startTransaction();
 
     try {
-      const resResult = await queryRunner.query(
-        `UPDATE reservations SET status = 'Anulowana' 
-         WHERE id = $1 AND user_id = $2 AND status = 'Potwierdzona' RETURNING id`,
+      // 1. Sprawdzamy, na jaki dystans była to rezerwacja, żeby wiedzieć ile punktów odebrać
+      const sched = await queryRunner.query(
+        `SELECT r.total_distance_km 
+         FROM reservations res
+         JOIN schedules s ON res.schedule_id = s.id
+         JOIN routes r ON s.route_id = r.id
+         WHERE res.id = $1 AND res.user_id = $2 AND res.status = 'Potwierdzona'`,
         [reservationId, userId]
       );
 
-      if (resResult.length === 0) {
+      if (sched.length === 0) {
         throw new BadRequestException('Trudno anulować coś, czego nie ma, albo już cofnąłeś!');
       }
 
+      const pointsToRemove = sched[0].total_distance_km;
+
+      // 2. Anulujemy bilet
+      await queryRunner.query(
+        `UPDATE reservations SET status = 'Anulowana' 
+         WHERE id = $1 RETURNING id`,
+        [reservationId]
+      );
+
+      // 3. Odejmujemy cwaniackie punkty (zapobiegamy exploitowi na punkty lojalnościowe)
+      await queryRunner.query(
+        `UPDATE loyalty_points 
+         SET points_balance = GREATEST(points_balance - $1, 0), last_transaction_date = CURRENT_TIMESTAMP 
+         WHERE user_id = $2`,
+        [pointsToRemove, userId]
+      );
+
       await queryRunner.commitTransaction();
-      return { message: 'Rezerwacja usunięta, hajs przepadł. (Zart. Miejsce zwolnione)' };
+      return { message: 'Rezerwacja usunięta. Punkty lojalnościowe odebrane!' };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
