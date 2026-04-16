@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Nasza baza danych - tu trzymamy biletowy hajs
+  db:
+    image: postgres:16-alpine
+    container_name: kkbus_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-kkbus_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kkbus_pass}
+      POSTGRES_DB: ${DB_NAME:-kkbus_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - kkbus_db_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d # Żeby odpalić skrypty na start, jak będziemy mieli
+
+  # pgAdmin - do podglądania bazy, bo SQL w konsoli boli
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: kkbus_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@kkbus.pl}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  kkbus_db_data:
+    driver: local
+
+# "U mnie działa" - student 2024
