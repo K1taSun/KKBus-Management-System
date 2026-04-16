@@ -1,0 +1,61 @@
+RAPORT Z PRAC PROGRAMISTYCZNYCH - SESJA DZISIEJSZA
+System KKBus: Zarządzanie Linią Kraków-Katowice
+=================================================
+
+Dzień dobry (albo i lepszy). Poniżej log ze wszystkich krwawych robót przeprowadzonych na repozytorium w dniu dzisiejszym. Było ostro, ale dowieźliśmy potężną część dokumentacji, architektury bazodanowej oraz logiki serwerowej (etapy 1 i 2 wg specyfikacji projektu). "Student-dev" spłacił dług technologiczny jeszcze zanim on w ogóle powstał.
+
+[1] ETAP 1 - PAPIEROLOGIA I INICJALIZACJA (Faza Analityczno-Projektowa)
+-------------------------------------------------------------------------
+Zaczęliśmy od fundamentów, co by w ogóle wiedzieć na czym stoimy.
+
+1. Analiza i zbieranie wymagań (plik `docs/requirements/specyfikacja_wymagan.md`):
+   - Wyrzeźbiono matrycę ról użytkowników: Klient (Kupuje), Kierowca (Kieruje), Sekretariat (Poprawia po wszystkich), Właściciel (Liczy zyski).
+   - Skonkretyzowano Wymagania Funkcjonalne: Mechanizm twardej rezerwacji z przeciwdziałaniem overbookingowi oraz program lojalnościowy (magiczny przelicznik: 1 km = 1 punkt dla klienta).
+   - Skonkretyzowano Wymagania Niefunkcjonalne: Ostre zabezpieczenia hasłem i projekt z myślą o Mobile-First.
+
+2. Architektura bazy danych (plik `docs/erd/projekt_bazy_danych.md`):
+   - Zaprojektowaliśmy szkielet systemu relacyjnego dla bazy PostgreSQL. Całość spięta Trzecią Formą Normalną (3NF), aby duplikaty danych omijały nas szerokim łukiem.
+   - Wyrzeźbiliśmy ścisłe powiązania pomiędzy siedmioma tabelami. Używamy m.in. twardego kaskadowania rezerwacji, więc jeśli znika kurs, to znikają na niego bilety.
+
+3. Konfiguracja podwórka dev (`infra/docker-compose.yml` oraz `backend/package.json`):
+   - Stworzyliśmy plik uruchomieniowy pod Dockera dla silnika `postgres:16-alpine` z dodatkiem `pgadmin4`, żeby dało się patrzeć na to ludzkim okiem.
+   - Zainicjowaliśmy środowisko NestJS oraz Dockerfile pod backend. Repozytorium powitało nas folderami strukturalnymi.
+   - Wszystko sfinalizowano plikiem `.env.example`, w którym trzymamy domyślne namiary do bazy: `kkbus_user` i `kkbus_pass`.
+
+
+[2] ETAP 2 - ZEJŚCIE DO KODU (Implementacja SQL i NestJS)
+--------------------------------------------------------------------------
+Koniec z teorią, odpaliliśmy edytory pod ciężką logikę.
+
+1. Baza Danych (skrypt `infra/postgres-init/01-init.sql`):
+   - Zdefiniowaliśmy szkielet "z krwi i kości" wykorzystujący polecenia DDL (Create Table).
+   - Cechy szczególne: narzucono wymuszanie PK jako UUIDv4 za pomocą `uuid-ossp` (żeby ID rezerwacji/Konta klienta nie było trywialnym do zgadnięcia intem).
+   - Ustawiono `UNIQUE(schedule_id, seat_number)` co zabezpiecza overbooking (2 pasażerów nigdy nie wklepie tego samego siedzenia w autokarze, bo silnik bazy wywali błąd 23505 `unique_violation`).
+
+2. Backend NestJS - Konfigurator bazy (`backend/src/app.module.ts`, `main.ts`):
+   - Zmodyfikowaliśmy plik package.json wrzucając standardowe uzbrojenie (np. `bcrypt`, `@nestjs/jwt`, `passport` - paczki, bez których żaden serwer by nie uciągnął szanującego się systemu autoryzacji).
+   - Podpięto pod głównego Injectora natywną klasę TypeORM (`DataSource`), upewniając się, że flaga `synchronize: false` jest aktywna, bo przecież po to namachaliśmy się ze skryptem `01-init.sql`, żeby TypeORM teraz tego nie rzeźbił po swojemu.
+
+3. Logika Backendowa: Moduł Autoryzacji (`AuthModule`):
+   - Stworzono zestaw kontrolerów oraz strategii (AuthService). Rejestracja bezbłędnie transformuje hasełko z plain-text'u do nieczytelnego bełkotu bazującego na bibliotece `bcrypt` (z parametrem saltrrounds = 10).
+   - Podpięto autoryzację z JSON Web Tokens (JWT) wspieraną barierą Paszportu (`jwt.strategy.ts`). 
+   - Wdrożono genialne żądanie weryfikacyjne w DB: jeżeli `failed_login_attempts` przebije sufit 3 nieudanych przymiarek logowania, apka odcina klientowi dostęp ("Dzwoń do sekretariatu").
+
+4. Logika Backendowa: Moduł Rezerwacji (`ReservationsModule`):
+   - Klasyczny mechanizm chroniący przed przepełnieniem busa używając surowych mechanik bazy danych. W API użyliśmy `QueryRunner.startTransaction('SERIALIZABLE')` – uderzenie klasy najwyższej izolacji blokady w czasie tworzenia biletu. Zabezpiecza nas to przed brudnym odczytem. 
+   - W transakcji obok kupna biletu z miejsca nadpisuje się darmowa subskrypcja na Punkty Lojalnościowe. Zaciągamy długość trasy z silnika SQL i updatujemy wynik `points_balance` przypisany do UID.
+
+5. Logika Backendowa: Moduł Raportów (`ReportsModule`):
+   - Mały ukłon dla "Właścicieli". Przy użyciu bezpośrednich zapytań SQL wyciągamy popularność tras (`GROUP BY r.id`) oraz tworzymy luźne założenia przychodu dla całego biznesu generowane w trybie natychmiastowym.
+
+[3] SPRZĄTANIE PRZED WYJŚCIEM
+--------------------------------------------------------------------------
+1. Piekło `.gitignore`:
+   - Zauważyłem, że projekt leży i czeka bez zabezpieczeń, a my byliśmy sekundy od wrzucenia np. 3-gigabajtowego folderu `node_modules` czy folderów z bazą dockera bezpośrednio do centrali kodu (GitHub).
+   - Powstał srogi, precyzyjny zbiór definicji w `.gitignore`: wycięto `node_modules/`, `dist/`, denerwujące pliki z macOS (`.DS_Store`) i wszystkie systemowe logi `npm-debug.log`. 
+
+Podsumowanie studenckie: 
+Baza trzyma się twardo jak kamienica, back-end puka po API na porcie 3000 i waliduje tokeny szyfrowane do poziomu militarnego, a logi ani vendor-moduły nam repozytorium nie zaśmiecą. Na dzisiejszą zmianę wykonano 3 obfite commity i wszystko siedzi po stronie gita z wymownymi, polskimi podsumowaniami! 
+
+// KONIEC RAPORTU
+// Można iść po kawę albo spać. Zależnie od strefy czasowej.
