@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -32,7 +32,7 @@ export class AuthService {
       return { message: 'Rejestracja udana', user: result[0] };
     } catch (err: any) {
       if (err.code === '23505') {
-        throw new UnauthorizedException('E-mail już zajęty!');
+        throw new ConflictException('Podany adres e-mail jest już zarejestrowany.');
       }
       throw err;
     }
@@ -48,14 +48,14 @@ export class AuthService {
     );
 
     if (users.length === 0) {
-      throw new UnauthorizedException('Błędne dane logowania!');
+      throw new UnauthorizedException('Błędne dane logowania.');
     }
 
     const { id, password_hash, failed_login_attempts } = users[0];
 
     // Sprawdzamy limit logowań - "Blokada konta po 3 nieudanych"
     if (failed_login_attempts >= 3) {
-      throw new UnauthorizedException('Konto zablokowane po 3 nieudanych próbach. Dzwoń na sekretariat.');
+      throw new UnauthorizedException('Konto zostało zablokowane. Skontaktuj się z sekretariatem.');
     }
 
     const match = await bcrypt.compare(password, password_hash);
@@ -66,7 +66,7 @@ export class AuthService {
         `UPDATE users SET failed_login_attempts = failed_login_attempts + 1 WHERE id = $1`,
         [id]
       );
-      throw new UnauthorizedException('Błędne hasło!');
+      throw new UnauthorizedException('Błędne dane logowania.');
     }
 
     // Reset logowań z sukcesem
@@ -81,4 +81,4 @@ export class AuthService {
     };
   }
 }
-// Działa, nie dotykać!
+

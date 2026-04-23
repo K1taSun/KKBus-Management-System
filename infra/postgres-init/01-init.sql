@@ -65,7 +65,7 @@ CREATE TABLE reservations (
 -- Punkty Lojalnościowe
 CREATE TABLE loyalty_points (
     id SERIAL PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     points_balance INT DEFAULT 0 CHECK (points_balance >= 0),
     last_transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
