@@ -10,7 +10,7 @@ export class ReservationsService {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
-    await queryRunner.startTransaction('SERIALIZABLE'); // Maksymalna blokada by nie przelać autobusu
+    await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
       // 1. Sprawdzamy czy kurs w ogóle istnieje i pobieramy dystans do punktów
@@ -49,12 +49,12 @@ export class ReservationsService {
       );
 
       await queryRunner.commitTransaction();
-      return { message: 'Miejscówka klepnięta i punkty naliczone!', reservationId: resResult[0].id };
+      return { message: 'Rezerwacja potwierdzona i punkty lojalnościowe naliczone.', reservationId: resResult[0].id };
 
     } catch (err: any) {
       await queryRunner.rollbackTransaction();
-      if (err.code === '23505') { // Postgres "unique_violation"
-        throw new BadRequestException('Ktoś Ci podkupił to miejsce! Wybierz inne.');
+      if (err.code === '23505') {
+        throw new BadRequestException('Wybrane miejsce jest już zajęte. Wybierz inne.');
       }
       throw err;
     } finally {
@@ -80,7 +80,7 @@ export class ReservationsService {
       );
 
       if (sched.length === 0) {
-        throw new BadRequestException('Trudno anulować coś, czego nie ma, albo już cofnąłeś!');
+        throw new BadRequestException('Rezerwacja nie istnieje lub jest już anulowana.');
       }
 
       const pointsToRemove = sched[0].total_distance_km;
@@ -101,7 +101,7 @@ export class ReservationsService {
       );
 
       await queryRunner.commitTransaction();
-      return { message: 'Rezerwacja usunięta. Punkty lojalnościowe odebrane!' };
+      return { message: 'Rezerwacja anulowana. Punkty lojalnościowe odjęte.' };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -110,4 +110,3 @@ export class ReservationsService {
     }
   }
 }
-// Bez transakcji byłby tu niezły overbooking - student dev.

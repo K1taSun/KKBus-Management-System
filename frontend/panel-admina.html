@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KKBus – Panel Administracyjny. Zarządzanie rezerwacjami, kursami, flotą i raportami.">
+  <title>KKBus – Panel Administratora</title>
+  <link rel="stylesheet" href="src/css/styles.css">
+  <style>
+    :root { --sidebar-w: 260px; }
+    body { background: #f4f6fa; }
+    .panel-layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: var(--sidebar-w); background: #1a1a2e;
+      color: var(--color-white); display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-header {
+      padding: var(--space-lg); border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-role-badge {
+      display: inline-block; margin-top: var(--space-xs);
+      background: var(--color-primary-action); color: #fff;
+      font-size: var(--fs-xs); font-weight: 700; padding: 2px 8px;
+      border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .sidebar-user { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-lg); }
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--color-secondary-accent);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: var(--fs-md); flex-shrink: 0;
+    }
+    .sidebar-user-info p { font-size: var(--fs-sm); opacity: 0.7; margin-top: 2px; }
+    .sidebar-nav { flex: 1; padding: var(--space-md) 0; overflow-y: auto; }
+    .nav-section-label {
+      padding: var(--space-sm) var(--space-lg);
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: rgba(255,255,255,0.35);
+      margin-top: var(--space-sm);
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      font-size: var(--fs-sm); font-weight: 500; color: rgba(255,255,255,0.7);
+      cursor: pointer; transition: all var(--transition); border-left: 3px solid transparent;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(255,255,255,0.07); color: var(--color-white);
+      border-left-color: var(--color-primary-action);
+    }
+    .nav-icon { width: 20px; text-align: center; }
+    .sidebar-footer { padding: var(--space-lg); border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn {
+      width: 100%; padding: var(--space-sm) var(--space-md);
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
+      border-radius: var(--radius-sm); font-size: var(--fs-sm);
+      border: none; cursor: pointer; font-family: inherit; transition: all var(--transition);
+    }
+    .logout-btn:hover { background: rgba(255,0,0,0.3); color: #fff; }
+    .main-content { margin-left: var(--sidebar-w); flex: 1; padding: var(--space-2xl); }
+    .page-title { font-size: var(--fs-2xl); font-weight: 800; color: var(--color-primary-brand); margin-bottom: var(--space-xs); }
+    .page-subtitle { color: var(--color-text-muted); margin-bottom: var(--space-2xl); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl); }
+    .kpi-card {
+      background: var(--color-white); border-radius: var(--radius-md);
+      padding: var(--space-lg); box-shadow: var(--shadow-sm);
+      border-top: 4px solid var(--color-primary-action);
+    }
+    .kpi-value { font-size: var(--fs-2xl); font-weight: 800; color: var(--color-text-dark); }
+    .kpi-label { font-size: var(--fs-xs); color: var(--color-text-muted); margin-top: 4px; }
+    .kpi-trend { font-size: var(--fs-xs); color: #1a8754; margin-top: var(--space-sm); font-weight: 600; }
+    .panel-section {
+      background: var(--color-white); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm); padding: var(--space-xl); margin-bottom: var(--space-xl);
+    }
+    .section-title {
+      font-size: var(--fs-lg); font-weight: 700; color: var(--color-text-dark);
+      margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 2px solid #f4f6fa;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      text-align: left; font-size: var(--fs-xs); font-weight: 700;
+      color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+      padding: var(--space-sm) var(--space-md); border-bottom: 2px solid #f4f6fa;
+    }
+    .data-table td { padding: var(--space-md); font-size: var(--fs-sm); border-bottom: 1px solid #f4f6fa; color: var(--color-text-body); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f9fafc; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: var(--fs-xs); font-weight: 600; }
+    .badge-confirmed { background: #e6f9f0; color: #1a8754; }
+    .badge-paid      { background: #e8f4fd; color: #0a58ca; }
+    .badge-cancelled { background: #fde8e8; color: #b02a37; }
+    .badge-active    { background: #e6f9f0; color: #1a8754; }
+    .badge-service   { background: #fff3cd; color: #856404; }
+    /* Report bars */
+    .report-bar-row { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+    .report-bar-label { width: 180px; font-size: var(--fs-sm); color: var(--color-text-body); flex-shrink: 0; }
+    .report-bar-track { flex: 1; background: #f4f6fa; border-radius: 999px; height: 10px; }
+    .report-bar-fill { height: 100%; background: var(--color-primary-action); border-radius: 999px; }
+    .report-bar-val { font-size: var(--fs-sm); font-weight: 700; color: var(--color-text-dark); min-width: 60px; text-align: right; }
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); align-items: end; }
+    .form-group label { display: block; font-size: var(--fs-xs); font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--space-xs); }
+    .form-group input, .form-group select {
+      width: 100%; padding: 0.7rem 1rem; border: 2px solid var(--color-border);
+      border-radius: var(--radius-sm); font-size: var(--fs-sm); color: var(--color-text-dark);
+      background: var(--color-white); outline: none; font-family: inherit; transition: border-color var(--transition);
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--color-secondary-accent); }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main-content { margin-left: 0; padding: var(--space-lg); }
+    }
+  </style>
+</head>
+<body>
+<div class="panel-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="logo" style="color:#fff;font-size:var(--fs-lg);">
+        <span class="logo-icon">🚌</span><span>KKBus</span>
+      </a>
+      <div class="sidebar-role-badge">Admin</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">KZ</div>
+      <div class="sidebar-user-info"><strong>Krzysztof Zieliński</strong><p>Właściciel</p></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Przegląd</div>
+      <div class="nav-item active" data-panel="dashboard"><span class="nav-icon">📊</span> Dashboard</div>
+
+      <div class="nav-section-label">Zarządzanie</div>
+      <div class="nav-item" data-panel="reservations"><span class="nav-icon">🎟️</span> Rezerwacje</div>
+      <div class="nav-item" data-panel="schedules"><span class="nav-icon">📅</span> Kursy / Rozkład</div>
+      <div class="nav-item" data-panel="fleet"><span class="nav-icon">🚌</span> Flota</div>
+      <div class="nav-item" data-panel="users"><span class="nav-icon">👥</span> Użytkownicy</div>
+
+      <div class="nav-section-label">Analityka</div>
+      <div class="nav-item" data-panel="reports"><span class="nav-icon">📈</span> Raporty</div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" id="logoutBtn">🚪 Wyloguj się</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- Dashboard KPI -->
+    <div id="panel-dashboard">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Dzienny przegląd operacyjny systemu KKBus.</p>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-value">3</div><div class="kpi-label">Aktywni użytkownicy (dziś)</div><div class="kpi-trend">↑ 12% vs tydzień temu</div></div>
+        <div class="kpi-card" style="border-top-color:var(--color-secondary-accent)"><div class="kpi-value">4</div><div class="kpi-label">Kursy zaplanowane (dziś)</div><div class="kpi-trend">↔ Bez zmian</div></div>
+        <div class="kpi-card" style="border-top-color:#1a8754"><div class="kpi-value">1</div><div class="kpi-label">Rezerwacje (dziś)</div><div class="kpi-trend">↑ 1 nowa</div></div>
+        <div class="kpi-card" style="border-top-color:#856404"><div class="kpi-value">25 zł</div><div class="kpi-label">Przychód szacunkowy (dziś)</div><div class="kpi-trend">↑ od rezerwacji</div></div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">🔔 Ostatnie zdarzenia</div>
+        <table class="data-table">
+          <thead><tr><th>Czas</th><th>Zdarzenie</th><th>Szczegóły</th></tr></thead>
+          <tbody>
+            <tr><td>08:00</td><td>Nowa rezerwacja</td><td>Jan Kowalski – Kraków → Katowice, miejsce 12</td></tr>
+            <tr><td>07:45</td><td>Logowanie kierowcy</td><td>Marek Nowak zalogował się do systemu</td></tr>
+            <tr><td>07:30</td><td>Start kursu</td><td>KR 12345 | Trasa: Kraków → Katowice</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Rezerwacje -->
+    <div id="panel-reservations" style="display:none;">
+      <h1 class="page-title">Zarządzanie rezerwacjami</h1>
+      <p class="page-subtitle">Podgląd i edycja wszystkich rezerwacji w systemie.</p>
+      <div class="panel-section">
+        <div class="section-title">
+          🎟️ Wszystkie rezerwacje
+          <button class="btn btn-primary" style="font-size:var(--fs-xs);padding:0.4rem 1rem;">+ Nowa rezerwacja</button>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Klient</th><th>Trasa</th><th>Data kursu</th><th>Miejsce</th><th>Status</th><th>Akcja</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="font-family:monospace;font-size:var(--fs-xs)">A1B2</td>
+              <td>Jan Kowalski</td>
+              <td>Kraków → Katowice</td>
+              <td>Jutro, 08:00</td>
+              <td>12</td>
+              <td><span class="badge badge-confirmed">Potwierdzona</span></td>
+              <td>
+                <button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button>
+                <button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid #fde8e8;border-radius:var(--radius-sm);color:#b02a37;margin-left:4px;">Anuluj</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Kursy -->
+    <div id="panel-schedules" style="display:none;">
+      <h1 class="page-title">Kursy i Rozkład Jazdy</h1>
+      <p class="page-subtitle">Zarządzaj kursami, przypisuj kierowców i autobusy.</p>
+      <div class="panel-section">
+        <div class="section-title">
+          📅 Aktywne kursy
+          <button class="btn btn-primary" style="font-size:var(--fs-xs);padding:0.4rem 1rem;">+ Dodaj kurs</button>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Trasa</th><th>Odjazd</th><th>Przyjazd</th><th>Kierowca</th><th>Bus</th><th>Cena</th><th>Akcja</th></tr></thead>
+          <tbody>
+            <tr><td>Kraków → Katowice</td><td>Dziś 08:00</td><td>Dziś 09:15</td><td>Marek Nowak</td><td>KR 12345</td><td>25 zł</td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+            <tr><td>Kraków → Katowice</td><td>Dziś 10:30</td><td>Dziś 11:45</td><td>Marek Nowak</td><td>KR 54321</td><td>25 zł</td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+            <tr><td>Katowice → Kraków</td><td>Dziś 14:00</td><td>Dziś 15:15</td><td>Marek Nowak</td><td>KR 12345</td><td>25 zł</td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Flota -->
+    <div id="panel-fleet" style="display:none;">
+      <h1 class="page-title">Zarządzanie Flotą</h1>
+      <p class="page-subtitle">Stan i harmonogram przeglądów autobusów.</p>
+      <div class="panel-section">
+        <div class="section-title">
+          🚌 Autobusy
+          <button class="btn btn-primary" style="font-size:var(--fs-xs);padding:0.4rem 1rem;">+ Dodaj autobus</button>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Rejestracja</th><th>Model</th><th>Pojemność</th><th>Status</th><th>Akcja</th></tr></thead>
+          <tbody>
+            <tr><td>KR 12345</td><td>Solaris Urbino 12</td><td>50</td><td><span class="badge badge-active">Aktywny</span></td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+            <tr><td>KR 54321</td><td>Mercedes Tourismo</td><td>55</td><td><span class="badge badge-active">Aktywny</span></td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+            <tr><td>KR 99999</td><td>MAN Lion's Coach</td><td>48</td><td><span class="badge badge-service">W serwisie</span></td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Użytkownicy -->
+    <div id="panel-users" style="display:none;">
+      <h1 class="page-title">Zarządzanie Użytkownikami</h1>
+      <p class="page-subtitle">Lista wszystkich kont w systemie.</p>
+      <div class="panel-section">
+        <div class="section-title">👥 Konta systemowe</div>
+        <table class="data-table">
+          <thead><tr><th>Imię i Nazwisko</th><th>E-mail</th><th>Rola</th><th>Akcja</th></tr></thead>
+          <tbody>
+            <tr><td>Jan Kowalski</td><td>klient@kkbus.pl</td><td>Klient</td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+            <tr><td>Marek Nowak</td><td>kierowca@kkbus.pl</td><td>Kierowca</td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+            <tr><td>Anna Wiśniewska</td><td>sekretariat@kkbus.pl</td><td>Sekretariat</td><td><button class="btn" style="font-size:var(--fs-xs);padding:0.3rem 0.6rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);">Edytuj</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Raporty -->
+    <div id="panel-reports" style="display:none;">
+      <h1 class="page-title">Raporty i Analityka</h1>
+      <p class="page-subtitle">Przegląd kluczowych wskaźników operacyjnych i finansowych.</p>
+
+      <div class="panel-section">
+        <div class="section-title">📊 Popularność tras (liczba sprzedanych biletów)</div>
+        <div id="routeReport">
+          <div class="report-bar-row">
+            <div class="report-bar-label">Kraków → Katowice</div>
+            <div class="report-bar-track"><div class="report-bar-fill" style="width:80%"></div></div>
+            <div class="report-bar-val">80</div>
+          </div>
+          <div class="report-bar-row">
+            <div class="report-bar-label">Katowice → Kraków</div>
+            <div class="report-bar-track"><div class="report-bar-fill" style="width:65%"></div></div>
+            <div class="report-bar-val">65</div>
+          </div>
+          <div class="report-bar-row">
+            <div class="report-bar-label">Kraków → Katowice (Ekspres)</div>
+            <div class="report-bar-track"><div class="report-bar-fill" style="width:30%"></div></div>
+            <div class="report-bar-val">30</div>
+          </div>
+        </div>
+        <div style="margin-top:var(--space-lg);">
+          <button class="btn btn-primary" onclick="loadRouteReport()">🔄 Odśwież dane</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">💰 Szacunkowe przychody (per trasa)</div>
+        <table class="data-table" id="financeTable">
+          <thead><tr><th>Trasa</th><th>Szacowany przychód</th></tr></thead>
+          <tbody>
+            <tr><td>Kraków → Katowice</td><td style="font-weight:700;color:var(--color-primary-action)">2 000 zł</td></tr>
+            <tr><td>Katowice → Kraków</td><td style="font-weight:700;color:var(--color-primary-action)">1 625 zł</td></tr>
+            <tr><td>Kraków → Katowice (Ekspres)</td><td style="font-weight:700;color:var(--color-primary-action)">1 050 zł</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:var(--space-lg);">
+          <button class="btn btn-primary" onclick="loadFinanceReport()">🔄 Odśwież dane</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const panels = ['dashboard','reservations','schedules','fleet','users','reports'];
+  function showPanel(name) {
+    panels.forEach(p => {
+      const el = document.getElementById('panel-'+p);
+      const navEl = document.querySelector(`[data-panel="${p}"]`);
+      if (el) el.style.display = (p===name)?'block':'none';
+      if (navEl) navEl.classList.toggle('active', p===name);
+    });
+  }
+  document.querySelectorAll('[data-panel]').forEach(el =>
+    el.addEventListener('click', () => showPanel(el.dataset.panel))
+  );
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('kkbus_token');
+    window.location.href = 'index.html';
+  });
+
+  async function loadRouteReport() {
+    try {
+      const res = await fetch('/api/reports/routes', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('kkbus_token')}` }
+      });
+      const data = await res.json();
+      // Render real data when backend is connected
+      console.info('Route report loaded:', data);
+    } catch { /* using placeholder data */ }
+  }
+
+  async function loadFinanceReport() {
+    try {
+      const res = await fetch('/api/reports/finance', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('kkbus_token')}` }
+      });
+      const data = await res.json();
+      console.info('Finance report loaded:', data);
+    } catch { /* using placeholder data */ }
+  }
+</script>
+</body>
+</html>

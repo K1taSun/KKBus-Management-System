@@ -6,7 +6,6 @@ export class ReportsService {
   constructor(private dataSource: DataSource) {}
 
   async getRoutePopularity() {
-    // Prosta statystyka: ile biletów zeszło na której trasie. Szefostwo zawsze pyta o "cyferki".
     const result = await this.dataSource.query(`
       SELECT r.name as "Trasa", COUNT(res.id) as "Sprzedane_Bilety"
       FROM routes r
@@ -23,7 +22,6 @@ export class ReportsService {
   }
 
   async getFinancialEstimate() {
-    // Luźne szacunki przychodów w oparciu o price_base kursu
     const result = await this.dataSource.query(`
       SELECT r.name as "Trasa", SUM(s.price_base) as "Szacowany_Przychod"
       FROM routes r

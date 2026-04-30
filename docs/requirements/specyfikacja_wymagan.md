@@ -1,7 +1,10 @@
 # Specyfikacja Wymagań Systemowych - Projekt KKBus
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 ## 1. Cel systemu
 System ma ogarnąć chaos w firmie transportowej KKBus. Od biletów, przez grafiki, aż po punkty lojalnościowe dla stałych bywalców trasy Kraków-Katowice.
 
@@ -41,4 +44,3 @@ System ma ogarnąć chaos w firmie transportowej KKBus. Od biletów, przez grafi
 *   **RN4: Relacyjność:** Dane mają być spójne – nie może być rezerwacji na nieistniejący kurs.
 
 ---
-*Dokumentacja sporządzona z lekkim bólem głowy, ale rzetelnie.*

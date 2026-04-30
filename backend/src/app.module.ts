@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { SchedulesModule } from './modules/schedules/schedules.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     }),
     AuthModule,
     ReservationsModule,
+    SchedulesModule,
     ReportsModule,
   ],
 })

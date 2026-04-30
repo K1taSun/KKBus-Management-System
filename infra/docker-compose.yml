@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Nasza baza danych - tu trzymamy biletowy hajs
   db:
     image: postgres:16-alpine
     container_name: kkbus_db
@@ -14,9 +13,8 @@ services:
       - "5432:5432"
     volumes:
       - kkbus_db_data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d # Żeby odpalić skrypty na start, jak będziemy mieli
+      - ./postgres-init:/docker-entrypoint-initdb.d
 
-  # pgAdmin - do podglądania bazy, bo SQL w konsoli boli
   pgadmin:
     image: dpage/pgadmin4
     container_name: kkbus_pgadmin
@@ -33,4 +31,3 @@ volumes:
   kkbus_db_data:
     driver: local
 
-# "U mnie działa" - student 2024

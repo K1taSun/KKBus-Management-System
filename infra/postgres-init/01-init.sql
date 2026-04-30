@@ -70,4 +70,3 @@ CREATE TABLE loyalty_points (
     last_transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Jak odpali to chłodzimy szampana

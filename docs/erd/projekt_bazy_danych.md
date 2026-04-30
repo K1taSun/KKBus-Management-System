@@ -1,6 +1,6 @@
 # Projekt Bazy Danych - System KKBus (KKBusDB)
 
-<!-- Baza danych to serce systemu, więc musi być git -->
+
 
 ## 1. Schemat Encji (ERD)
 
@@ -52,7 +52,6 @@ Będziemy używać PostgreSQL. Każda tabela ma `id` (Serial/UUID), `created_at`
 *   `user_id`: UUID (FK to `users`)
 *   `seat_number`: Int
 *   `status`: String (Potwierdzona, Opłacona, Anulowana)
-*   <!-- Tu musimy pilnować overbookingu na poziomie bazy (SELECT ... FOR UPDATE) -->
 
 #### `loyalty_points` (Punkty)
 *   `id`: Serial (PK)
@@ -70,4 +69,3 @@ Będziemy używać PostgreSQL. Każda tabela ma `id` (Serial/UUID), `created_at`
 Wszystko w 3NF (Trzecia Forma Normalna). Nie redundujemy danych, np. dystans trasy jest tylko w `routes`, nie w każdym `schedule`.
 
 ---
-*Prowizorka najtrwalej trzyma, ale baza musi stać na twardych relacjach.*
