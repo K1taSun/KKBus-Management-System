@@ -6,10 +6,16 @@
 # ─── Zależności (node_modules) ──────────────────────────────────────
 node_modules/
 
-# ─── Build / kompilacja TypeScript (NestJS) ─────────────────────────
+# ─── Build / kompilacja ─────────────────────────────────────────────
 dist/
+build/
+out/
+.next/
+.nuxt/
+.vite/
 *.tsbuildinfo
 *.js.map
+.eslintcache
 
 # ─── Testy i pokrycie kodu ──────────────────────────────────────────
 coverage/
