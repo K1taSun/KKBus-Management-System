@@ -6,6 +6,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // Odpalamy walidację globalną dla DTO
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  // Dodajemy prefiks globalny dla wszystkich ścieżek
+  app.setGlobalPrefix('api');
   // Włączamy CORS bo studencki port 3000 gryzie się z frontem
   app.enableCors();
   

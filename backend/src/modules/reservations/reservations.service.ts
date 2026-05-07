@@ -19,7 +19,7 @@ export class ReservationsService {
          FROM schedules s
          JOIN buses b ON s.bus_id = b.id
          JOIN routes r ON s.route_id = r.id
-         WHERE s.id = $1`,
+         WHERE s.id = $1 FOR UPDATE`,
         [schedule_id]
       );
 

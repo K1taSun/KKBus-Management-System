@@ -57,28 +57,90 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── Search form submission ─────────────────────────────────
+  // ─── Search form submission & Validation ──────────────────────
   const searchForm = document.getElementById('searchForm');
-  searchForm.addEventListener('submit', (e) => {
+  searchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    const fromInput = document.getElementById('from');
+    const toInput = document.getElementById('to');
     const from = fromInput.value.trim();
     const to = toInput.value.trim();
-    const date = dateInput.value;
+    const dateStr = dateInput.value;
     const passengers = document.getElementById('passengers').value;
 
-    if (!from || !to) {
-      alert('Podaj skąd i dokąd chcesz jechać!');
+    // Client-side validation
+    let hasError = false;
+
+    // Walidacja miast (tylko litery, spacje, myślniki, polskie znaki)
+    const cityRegex = /^[A-Za-zĄąĆćĘęŁłŃńÓóŚśŹźŻż\s\-]{2,50}$/;
+    
+    if (!cityRegex.test(from)) {
+      alert('Podaj poprawne miasto wyjazdu (tylko litery, min. 2 znaki).');
+      fromInput.focus();
+      hasError = true;
       return;
     }
 
-    // For now, show a confirmation (backend integration later)
-    alert(
-      `🔍 Szukam połączenia:\n\n` +
-      `📍 ${from} → ${to}\n` +
-      `📅 ${date}\n` +
-      `👤 Pasażerowie: ${passengers}\n\n` +
-      `(Integracja z backendem w toku)`
-    );
+    if (!cityRegex.test(to)) {
+      alert('Podaj poprawne miasto docelowe (tylko litery, min. 2 znaki).');
+      toInput.focus();
+      hasError = true;
+      return;
+    }
+
+    if (from.toLowerCase() === to.toLowerCase()) {
+      alert('Miasto docelowe nie może być takie samo jak miasto wyjazdu!');
+      toInput.focus();
+      hasError = true;
+      return;
+    }
+
+    // Walidacja daty (nie w przeszłości)
+    const selectedDate = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // wyzerowanie godzin do porownania
+    if (selectedDate < today) {
+      alert('Wybrana data wyjazdu jest w przeszłości!');
+      dateInput.focus();
+      hasError = true;
+      return;
+    }
+
+    if (hasError) return;
+
+    try {
+      const submitBtn = searchForm.querySelector('.search-submit');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '⏳ Szukam...';
+      submitBtn.disabled = true;
+
+      // Wywołanie API na Nginx Reverse Proxy -> Backend
+      const response = await fetch(`/api/schedules?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${encodeURIComponent(dateStr)}`);
+      
+      if (!response.ok) {
+        throw new Error(`Błąd serwera: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+
+      if (data.length === 0) {
+        alert(`Brak połączeń na trasie ${from} -> ${to} w dniu ${dateStr}.`);
+      } else {
+        // Docelowo: dynamiczne wyrenderowanie kart z wynikami
+        let msg = `Znaleziono ${data.length} połączeń:\n\n`;
+        data.forEach(s => {
+          msg += `🚌 ${s.route_name}\nWyjazd: ${new Date(s.departure_time).toLocaleTimeString()} | Miejsc: ${s.available_seats}\nCena: ${s.price_base} PLN\n\n`;
+        });
+        alert(msg);
+      }
+    } catch (err) {
+      alert('Błąd połączenia z serwerem. Upewnij się, że kontenery działają (docker-compose up).');
+      console.error(err);
+    }
   });
 
   // ─── Scroll reveal animations ───────────────────────────────

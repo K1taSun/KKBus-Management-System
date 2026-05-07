@@ -224,14 +224,11 @@
   document.querySelectorAll('[data-panel]').forEach(el =>
     el.addEventListener('click', () => showPanel(el.dataset.panel))
   );
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('kkbus_token');
-    window.location.href = 'index.html';
-  });
   function toggleCheck(btn) {
     btn.classList.toggle('checked');
     btn.textContent = btn.classList.contains('checked') ? '✅' : '☐';
   }
 </script>
+<script src="src/js/panel-kierowcy.js"></script>
 </body>
 </html>

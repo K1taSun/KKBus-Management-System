@@ -320,31 +320,7 @@
   document.querySelectorAll('[data-panel]').forEach(el =>
     el.addEventListener('click', () => showPanel(el.dataset.panel))
   );
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('kkbus_token');
-    window.location.href = 'index.html';
-  });
-
-  async function loadRouteReport() {
-    try {
-      const res = await fetch('/api/reports/routes', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kkbus_token')}` }
-      });
-      const data = await res.json();
-      // Render real data when backend is connected
-      console.info('Route report loaded:', data);
-    } catch { /* using placeholder data */ }
-  }
-
-  async function loadFinanceReport() {
-    try {
-      const res = await fetch('/api/reports/finance', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kkbus_token')}` }
-      });
-      const data = await res.json();
-      console.info('Finance report loaded:', data);
-    } catch { /* using placeholder data */ }
-  }
 </script>
+<script src="src/js/panel-admina.js"></script>
 </body>
 </html>
