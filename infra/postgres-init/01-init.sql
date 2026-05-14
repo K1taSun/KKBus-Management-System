@@ -18,6 +18,7 @@ CREATE TABLE users (
     phone VARCHAR(20),
     role_id INT NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
     failed_login_attempts INT DEFAULT 0,
+    no_shows INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -68,5 +69,26 @@ CREATE TABLE loyalty_points (
     user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     points_balance INT DEFAULT 0 CHECK (points_balance >= 0),
     last_transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Dyspozycyjność Kierowców
+CREATE TABLE driver_availability (
+    id SERIAL PRIMARY KEY,
+    driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    available_date DATE NOT NULL,
+    status VARCHAR(50) DEFAULT 'Dostępny' CHECK (status IN ('Dostępny', 'Niedostępny', 'Urlop', 'Zwolnienie')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (driver_id, available_date)
+);
+
+-- Raporty z Kursów (Wypełniane przez kierowców po zakończeniu trasy)
+CREATE TABLE route_reports (
+    id SERIAL PRIMARY KEY,
+    schedule_id INT NOT NULL UNIQUE REFERENCES schedules(id) ON DELETE RESTRICT,
+    actual_passengers INT NOT NULL CHECK (actual_passengers >= 0),
+    fuel_liters DECIMAL(10,2) NOT NULL CHECK (fuel_liters >= 0),
+    distance_km INT NOT NULL CHECK (distance_km >= 0),
+    status VARCHAR(50) DEFAULT 'Oczekujący' CHECK (status IN ('Oczekujący', 'Zatwierdzony', 'Odrzucony')),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

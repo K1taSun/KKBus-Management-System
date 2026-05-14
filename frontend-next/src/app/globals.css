@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@theme {
+  --color-primary: #0F3460;
+  --color-primary-light: #1A4B8C;
+  --color-action: #0EA5E9;
+  --color-action-hover: #0284C7;
+  --color-background-main: #FFFFFF;
+  --color-background-alt: #F8F9FA;
+  --color-text-main: #2D3748;
+  --color-text-muted: #4A5568;
+}
+
+:root {
+  --background: var(--color-background-main);
+  --foreground: var(--color-text-main);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}

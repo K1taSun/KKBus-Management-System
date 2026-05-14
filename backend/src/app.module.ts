@@ -15,7 +15,7 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
       password: process.env.DB_PASSWORD || 'kkbus_pass',
       database: process.env.DB_NAME || 'kkbus_db',
       autoLoadEntities: true,
-      synchronize: false, // My użyliśmy skryptu SQL, nie pozwalamy TypeORM mieszać!
+      synchronize: false, // Database schema managed via SQL migration scripts
     }),
     AuthModule,
     ReservationsModule,

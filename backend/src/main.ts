@@ -8,10 +8,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   // Dodajemy prefiks globalny dla wszystkich ścieżek
   app.setGlobalPrefix('api');
-  // Włączamy CORS bo studencki port 3000 gryzie się z frontem
-  app.enableCors();
-  
   await app.listen(3000);
-  console.log(`Prowizorka na porcie 3000 wstała! KKBus czeka.`);
+  console.log(`KKBus Backend is running on port 3000`);
 }
 bootstrap();

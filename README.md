@@ -1,41 +1,55 @@
 # KKBus - Zintegrowany System Zarządzania Firmą Transportową
 
 ![Licencja](https://img.shields.io/badge/licencja-MIT-green)
-![Technologie](https://img.shields.io/badge/stack-NestJS%20%7C%20PostgreSQL%20%7C%20Docker-orange)
+![Technologie](https://img.shields.io/badge/stack-NestJS%20%7C%20Next.js%20%7C%20PostgreSQL-blue)
+![Docker](https://img.shields.io/badge/docker-ready-cyan)
 
 ## 🚌 O Projekcie
-KKBus to nowoczesna, responsywna aplikacja internetowa zaprojektowana dla firmy transportowej **KKBus sp. z o.o.**, obsługującej przewozy pasażerskie na trasie Kraków-Katowice. System automatyzuje kluczowe procesy biznesowe: od rezerwacji biletów przez klientów, po zaawansowane zarządzanie flotą, grafikami kierowców i analityką finansową.
+KKBus to profesjonalna, nowoczesna platforma transportowa zaprojektowana dla **KKBus sp. z o.o.**, dedykowana obsłudze pasażerów na trasie **Kraków ↔ Katowice**. System łączy w sobie nowoczesny frontend w React z wydajnym backendem w NestJS, zapewniając pełną automatyzację procesu rezerwacji, zarządzania flotą oraz analityki.
 
 ## 👥 Zespół Projektowy
-* **Nikita Parkovskyi** – Lider zespołu, Backend Developer & DBA
+* **Nikita Parkovskyi** – Architekt Systemu, Backend Developer & DBA
 * **Artur Orfin** – Frontend Developer, UI/UX Designer & QA
 
 ## 🛠 Stos Technologiczny
-* **Backend:** Node.js (Framework NestJS) + TypeScript
-* **Frontend:** HTML5, CSS3 (Mobile-First), JavaScript
-* **Baza Danych:** PostgreSQL (Relacyjna baza KKBusDB)
-* **Infrastruktura:** Docker & Docker Compose (Konteneryzacja)
+* **Backend:** Node.js (NestJS) + TypeORM + PostgreSQL
+* **Frontend:** Next.js 15+ (App Router) + Tailwind CSS v4 + Framer Motion
+* **Infrastruktura:** Docker & Docker Compose
+* **Design:** Mobile-First, Modern UI, Glassmorphism
 
 ## 🚀 Kluczowe Funkcjonalności
-* **System Rezerwacji:** Zabezpieczony przed overbookingiem dzięki blokowaniu wierszy na poziomie bazy danych.
-* **Program Lojalnościowy:** Automatyczne naliczanie punktów ($1\ km = 1\ punkt$) z możliwością wymiany na nagrody.
-* **Panele Pracownicze:** Dedykowane interfejsy dla kierowców (grafiki, listy pasażerów) oraz sekretariatu.
-* **Bezpieczeństwo:** Szyfrowanie haseł (bcrypt), protokół HTTPS oraz blokada konta po 3 nieudanych próbach logowania.
+* **Trzy Panele Dostępu:** 
+  - **Klient:** Rezerwacje, program lojalnościowy (1 km = 1 pkt), historia podróży.
+  - **Kierowca:** Mobilny panel do zarządzania listą pasażerów i raportowania tras.
+  - **Admin:** Centrum zarządzania trasami, flotą, użytkownikami i analityką finansową.
+* **Bezpieczeństwo:** Pessimistic Locking (zapobieganie overbookingowi), walidacje biznesowe (T-2h / T-24h), szyfrowanie haseł.
+* **Wydajność:** Pełna konteneryzacja pozwalająca na błyskawiczne wdrożenie środowiska produkcyjnego.
 
-## 📂 Architektura Projektu
+## 📂 Struktura Projektu
 ```text
 KKBus-Management-System/
-├── backend/                # Logika serwerowa (NestJS & TypeScript)
-│   ├── src/
-│   │   ├── modules/        # Moduły: Auth, Reservations, Fleet, Loyalty, Reports
-│   │   └── database/       # Konfiguracja PostgreSQL i migracje
-├── frontend/               # Warstwa prezentacji (Responsive UI - Mobile First)
-│   ├── src/
-│   │   ├── css/            # Style CSS Flexbox/Grid
-│   │   └── views/          # Widoki: Klient, Kierowca, Administrator
-├── infra/                  # Infrastruktura i konteneryzacja
-│   ├── docker-compose.yml  # Orkiestracja kontenerów
-│   └── postgres-init/      # Skrypty inicjalizacyjne SQL
-├── docs/                   # Dokumentacja projektowa (ERD, Specyfikacja)
-└── LICENSE                 # Licencja MIT
+├── backend/            # API Serwerowe (NestJS)
+│   └── src/modules/    # Auth, Reservations, Reports, Schedules
+├── frontend-next/      # Nowoczesny Interfejs (Next.js)
+│   └── src/app/        # Routing: (public), (auth), (client), (driver), (admin)
+├── infra/              # Konfiguracja Docker & PostgreSQL
+│   ├── docker-compose  # Orkiestracja całego stosu
+│   └── postgres-init/  # Skrypty inicjalizujące schemat i dane (Seed)
+└── docs/               # Dokumentacja techniczna i makiety
+```
 
+## 🛠 Jak uruchomić?
+System jest w pełni skonteneryzowany. Aby uruchomić cały stos technologiczny:
+
+1. Upewnij się, że masz zainstalowany **Docker** i **Docker Compose**.
+2. W folderze głównym wykonaj komendę:
+   ```bash
+   docker-compose -f infra/docker-compose.yml up --build
+   ```
+3. Aplikacja będzie dostępna pod adresami:
+   - **Frontend:** http://localhost:3000
+   - **Backend API:** http://localhost:3000/api
+   - **pgAdmin:** http://localhost:5050 (Zarządzanie bazą)
+
+---
+*Projekt realizowany w ramach kamieni milowych rozwoju systemów transportowych.*

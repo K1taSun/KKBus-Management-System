@@ -13,12 +13,19 @@ export class ReservationsService {
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
-      // 1. Sprawdzamy czy kurs w ogóle istnieje i pobieramy dystans do punktów
+      // Blokada za no-show
+      const userRes = await queryRunner.query(
+        `SELECT no_shows FROM users WHERE id = $1`, [userId]
+      );
+      if (userRes[0]?.no_shows >= 3) {
+        throw new BadRequestException('Konto zablokowane z powodu 3 niezrealizowanych rezerwacji.');
+      }
+
+      // Sprawdzenie kursu i czasu (min. 2h)
       const scheduleRes = await queryRunner.query(
-        `SELECT s.id, b.capacity, r.total_distance_km 
+        `SELECT s.id, b.capacity, s.departure_time 
          FROM schedules s
          JOIN buses b ON s.bus_id = b.id
-         JOIN routes r ON s.route_id = r.id
          WHERE s.id = $1 FOR UPDATE`,
         [schedule_id]
       );
@@ -27,29 +34,26 @@ export class ReservationsService {
         throw new BadRequestException('Taki kurs u nas nie widnieje.');
       }
 
-      const { capacity, total_distance_km } = scheduleRes[0];
+      const { capacity, departure_time } = scheduleRes[0];
+      const hoursUntilDeparture = (new Date(departure_time).getTime() - Date.now()) / (1000 * 60 * 60);
+
+      if (hoursUntilDeparture < 2) {
+        throw new BadRequestException('Rezerwacja jest możliwa najpóźniej na 2 godziny przed odjazdem.');
+      }
 
       if (seat_number < 1 || seat_number > capacity) {
         throw new BadRequestException(`Autobus ma tylko ${capacity} miejsc!`);
       }
 
-      // 2. Wbijamy rezerwację (baza wywali błąd unique constraint jeśli miejsce zajęte)
+      // Zapis rezerwacji (blokada pesymistyczna)
       const resResult = await queryRunner.query(
         `INSERT INTO reservations (schedule_id, user_id, seat_number, status) 
          VALUES ($1, $2, $3, 'Potwierdzona') RETURNING id`,
         [schedule_id, userId, seat_number]
       );
 
-      // 3. Dodajemy punkty lojalnościowe w gratisie (1 km = 1 pkt)
-      await queryRunner.query(
-        `UPDATE loyalty_points 
-         SET points_balance = points_balance + $1, last_transaction_date = CURRENT_TIMESTAMP 
-         WHERE user_id = $2`,
-        [total_distance_km, userId]
-      );
-
       await queryRunner.commitTransaction();
-      return { message: 'Rezerwacja potwierdzona i punkty lojalnościowe naliczone.', reservationId: resResult[0].id };
+      return { message: 'Rezerwacja potwierdzona.', reservationId: resResult[0].id };
 
     } catch (err: any) {
       await queryRunner.rollbackTransaction();
@@ -69,12 +73,11 @@ export class ReservationsService {
     await queryRunner.startTransaction();
 
     try {
-      // 1. Sprawdzamy, na jaki dystans była to rezerwacja, żeby wiedzieć ile punktów odebrać
+      // Sprawdzenie czasu (min. 24h na anulację)
       const sched = await queryRunner.query(
-        `SELECT r.total_distance_km 
+        `SELECT s.departure_time 
          FROM reservations res
          JOIN schedules s ON res.schedule_id = s.id
-         JOIN routes r ON s.route_id = r.id
          WHERE res.id = $1 AND res.user_id = $2 AND res.status = 'Potwierdzona'`,
         [reservationId, userId]
       );
@@ -83,25 +86,21 @@ export class ReservationsService {
         throw new BadRequestException('Rezerwacja nie istnieje lub jest już anulowana.');
       }
 
-      const pointsToRemove = sched[0].total_distance_km;
+      const hoursUntilDeparture = (new Date(sched[0].departure_time).getTime() - Date.now()) / (1000 * 60 * 60);
+
+      if (hoursUntilDeparture < 24) {
+        throw new BadRequestException('Anulowanie rezerwacji jest możliwe najpóźniej na 24 godziny przed odjazdem.');
+      }
 
       // 2. Anulujemy bilet
       await queryRunner.query(
         `UPDATE reservations SET status = 'Anulowana' 
-         WHERE id = $1 RETURNING id`,
+         WHERE id = $1`,
         [reservationId]
       );
 
-      // 3. Odejmujemy cwaniackie punkty (zapobiegamy exploitowi na punkty lojalnościowe)
-      await queryRunner.query(
-        `UPDATE loyalty_points 
-         SET points_balance = GREATEST(points_balance - $1, 0), last_transaction_date = CURRENT_TIMESTAMP 
-         WHERE user_id = $2`,
-        [pointsToRemove, userId]
-      );
-
       await queryRunner.commitTransaction();
-      return { message: 'Rezerwacja anulowana. Punkty lojalnościowe odjęte.' };
+      return { message: 'Rezerwacja została pomyślnie anulowana.' };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;

@@ -55,6 +55,7 @@ Desktop.ini
 # ─── IDE / Edytory ──────────────────────────────────────────────────
 .idea/
 .vscode/
+!.vscode/settings.json
 *.suo
 *.ntvs*
 *.njsproj
