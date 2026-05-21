@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "KKBus - Wygodne i szybkie podróże autokarowe",
-  description: "Zarezerwuj bilet na podróż z KKBus. Oferujemy tanie, szybkie i wygodne połączenia autobusowe po całej Polsce.",
+  title: "KKBus",
+  description: "Zarezerwuj bilet na podróż z KKBus.",
 };
 
 export default function RootLayout({

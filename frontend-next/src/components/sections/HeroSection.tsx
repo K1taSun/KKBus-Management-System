@@ -27,7 +27,7 @@ export function HeroSection() {
             Podróżuj wygodnie, <span className="text-action">tanio</span> i na czas
           </h1>
           <h2 className="text-lg md:text-2xl text-gray-200 font-medium max-w-2xl drop-shadow-sm">
-            Znajdź idealne połączenie spośród setek tras w całej Polsce i Europie.
+            Znajdź idealne połączenie na szybkiej i wygodnej trasie Kraków ↔ Katowice.
           </h2>
         </div>
       </div>

@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import L, { Map as LeafletMap } from "leaflet";
 
 interface City {
   id: string;
@@ -36,18 +37,36 @@ const createCustomIcon = (name: string) => {
 };
 
 export default function DynamicMap() {
-  // Ośrodek mapy (między Krakowem a Katowicami)
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    
+    // Globalny fix dla Leaflet w środowisku z Hot Reloading:
+    // Czyści ewentualne stare instancje mapy pozostawione w DOM przez Next.js
+    return () => {
+      const container = L.DomUtil.get('leaflet-map');
+      if (container) {
+        // @ts-ignore
+        container._leaflet_id = null;
+      }
+    };
+  }, []);
+
   const center: [number, number] = [50.1648, 19.4844];
 
+  if (!isMounted) return null;
+
   return (
-    <MapContainer 
-      center={center} 
-      zoom={10} 
-      scrollWheelZoom={false} 
-      style={{ height: "100%", width: "100%", borderRadius: "1.5rem" }}
-      className="z-0"
-    >
-      <TileLayer
+    <div id="leaflet-map" style={{ height: "100%", width: "100%", zIndex: 0 }}>
+      <MapContainer 
+        center={center} 
+        zoom={10} 
+        scrollWheelZoom={false} 
+        style={{ height: "100%", width: "100%", borderRadius: "1.5rem" }}
+        className="z-0"
+      >
+        <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
@@ -81,5 +100,6 @@ export default function DynamicMap() {
         </Marker>
       ))}
     </MapContainer>
+    </div>
   );
 }

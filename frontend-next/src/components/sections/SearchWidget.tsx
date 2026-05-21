@@ -7,11 +7,31 @@ import * as z from "zod";
 import { MapPin, ArrowRightLeft, Calendar, Users, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const LOCATION_OPTIONS = [
+  "Kraków (Wszystkie przystanki)",
+  "Kraków MDA (Dworzec)",
+  "Kraków AGH",
+  "Kraków Rondo Ofiar Katynia",
+  "Kraków Lotnisko Balice",
+  "Katowice (Wszystkie przystanki)",
+  "Katowice Sądowa (Dworzec)",
+  "Katowice Zawodzie",
+  "Katowice Piotrowice",
+];
+
+const isValidLocation = (val: string) => {
+  const v = val.toLowerCase();
+  return LOCATION_OPTIONS.some(opt => opt.toLowerCase().includes(v)) || v.includes("krak") || v.includes("katow");
+};
+
 const searchSchema = z.object({
-  from: z.string().min(1, "Wpisz miasto wyjazdu"),
-  to: z.string().min(1, "Wpisz miasto docelowe"),
+  from: z.string().min(1, "Wpisz miasto wyjazdu").refine(isValidLocation, "Wybierz przystanek w Krakowie lub Katowicach"),
+  to: z.string().min(1, "Wpisz miasto docelowe").refine(isValidLocation, "Wybierz przystanek w Krakowie lub Katowicach"),
   date: z.string().min(1, "Wybierz datę"),
   passengers: z.string().min(1, "Wybierz liczbę pasażerów"),
+}).refine(data => data.from !== data.to, {
+  message: "Skąd i Dokąd muszą być różne",
+  path: ["to"]
 });
 
 type SearchFormValues = z.infer<typeof searchSchema>;
@@ -53,17 +73,26 @@ export function SearchWidget() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col md:flex-row items-end gap-4 md:gap-2">
         {/* Od */}
         <div className="w-full md:flex-1 relative">
-          <label htmlFor="from" className="block text-xs font-semibold text-text-muted mb-1 ml-1">Skąd</label>
+           <div className="flex justify-between items-center mb-1">
+            <label htmlFor="from" className="block text-xs font-semibold text-text-muted ml-1">Skąd</label>
+            {errors.from && <span className="text-[10px] text-red-500">{errors.from.message}</span>}
+          </div>
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               id="from"
-              placeholder="Miasto wyjazdu"
+              list="locations-list"
+              placeholder="Miasto lub przystanek"
               {...register("from")}
               className={`w-full h-12 pl-10 pr-3 rounded-lg border bg-background-alt text-sm focus:outline-none focus:ring-2 focus:ring-action transition-all ${
                 errors.from ? "border-red-500 focus:ring-red-500" : "border-gray-200"
               }`}
             />
+            <datalist id="locations-list">
+              {LOCATION_OPTIONS.map(opt => (
+                <option key={opt} value={opt} />
+              ))}
+            </datalist>
           </div>
         </div>
 
@@ -82,7 +111,10 @@ export function SearchWidget() {
         {/* Do */}
         <div className="w-full md:flex-1 relative">
           <div className="flex justify-between items-center mb-1">
-            <label htmlFor="to" className="block text-xs font-semibold text-text-muted ml-1">Dokąd</label>
+            <div className="flex items-center gap-2">
+              <label htmlFor="to" className="block text-xs font-semibold text-text-muted ml-1">Dokąd</label>
+              {errors.to && <span className="text-[10px] text-red-500">{errors.to.message}</span>}
+            </div>
             {/* Mobile swap button */}
             <button
               type="button"
@@ -96,7 +128,8 @@ export function SearchWidget() {
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               id="to"
-              placeholder="Miasto docelowe"
+              list="locations-list"
+              placeholder="Miasto lub przystanek"
               {...register("to")}
               className={`w-full h-12 pl-10 pr-3 rounded-lg border bg-background-alt text-sm focus:outline-none focus:ring-2 focus:ring-action transition-all ${
                 errors.to ? "border-red-500 focus:ring-red-500" : "border-gray-200"

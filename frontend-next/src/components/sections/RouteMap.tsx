@@ -16,7 +16,7 @@ export function RouteMap() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="mb-12 text-center md:text-left">
           <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Nasza sieć połączeń</h2>
-          <p className="text-lg text-text-muted">Nowoczesne autokary łączące kluczowe miasta w Polsce.</p>
+          <p className="text-lg text-text-muted">Nowoczesne autokary łączące Kraków i Katowice.</p>
         </div>
 
         <div className="relative w-full max-w-5xl mx-auto h-[500px] md:h-[600px] bg-white rounded-3xl shadow-lg border border-gray-100 p-2 md:p-4 z-0">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, User, ShoppingCart, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,9 @@ import { Button } from "@/components/ui/button";
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isHomePage = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,7 +26,7 @@ export function Navbar() {
     <header
       className={cn(
         "fixed top-0 w-full z-50 transition-all duration-300",
-        isScrolled
+        isScrolled || !isHomePage
           ? "bg-primary shadow-md py-3"
           : "bg-transparent py-5"
       )}
@@ -39,8 +43,8 @@ export function Navbar() {
         <nav className="hidden md:flex items-center gap-8">
           <Link href="#" className="text-white hover:text-action transition-colors text-sm font-medium">Rozkład jazdy</Link>
           <Link href="#" className="text-white hover:text-action transition-colors text-sm font-medium">Przystanki</Link>
-          <Link href="#" className="text-white hover:text-action transition-colors text-sm font-medium">Cennik</Link>
-          <Link href="#" className="text-white hover:text-action transition-colors text-sm font-medium">Informacje</Link>
+          <Link href="/cennik" className="text-white hover:text-action transition-colors text-sm font-medium">Cennik</Link>
+          <Link href="/informacje" className="text-white hover:text-action transition-colors text-sm font-medium">Informacje</Link>
         </nav>
 
         {/* Right Actions */}
@@ -75,8 +79,8 @@ export function Navbar() {
           <nav className="flex flex-col gap-6 text-center">
             <Link href="#" className="text-2xl font-medium text-white hover:text-action">Rozkład jazdy</Link>
             <Link href="#" className="text-2xl font-medium text-white hover:text-action">Przystanki</Link>
-            <Link href="#" className="text-2xl font-medium text-white hover:text-action">Cennik</Link>
-            <Link href="#" className="text-2xl font-medium text-white hover:text-action">Informacje</Link>
+            <Link href="/cennik" className="text-2xl font-medium text-white hover:text-action">Cennik</Link>
+            <Link href="/informacje" className="text-2xl font-medium text-white hover:text-action">Informacje</Link>
           </nav>
           <div className="mt-auto mb-10 flex flex-col gap-4">
             <Button variant="outline" className="w-full text-white border-white hover:bg-white hover:text-primary justify-center gap-2">

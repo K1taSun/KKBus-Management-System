@@ -14,7 +14,7 @@ export function Footer() {
               </span>
             </div>
             <p className="text-text-muted mb-6">
-              Nowoczesne linie autokarowe łączące największe polskie miasta. Podróżuj bezpiecznie, wygodnie i zawsze na czas.
+              Nowoczesne linie autokarowe na trasie Kraków ↔ Katowice. Podróżuj bezpiecznie, wygodnie i zawsze na czas.
             </p>
             <div className="flex items-center gap-4">
               <a href="#" className="text-gray-400 hover:text-action transition-colors"><Globe size={20} /></a>
@@ -29,7 +29,7 @@ export function Footer() {
             <ul className="space-y-4">
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Rozkład jazdy</Link></li>
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Przystanki i mapy</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Cennik biletów</Link></li>
+              <li><Link href="/cennik" className="text-text-muted hover:text-action transition-colors">Cennik biletów</Link></li>
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Regulamin przewozów</Link></li>
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">FAQ</Link></li>
             </ul>
@@ -38,7 +38,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-text-main mb-6">Firma</h4>
             <ul className="space-y-4">
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">O nas</Link></li>
+              <li><Link href="/informacje" className="text-text-muted hover:text-action transition-colors">O nas</Link></li>
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Kariera</Link></li>
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Dla kierowców</Link></li>
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Kontakt</Link></li>
@@ -62,11 +62,16 @@ export function Footer() {
 
         </div>
 
-        <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-text-muted">
-          <p>© {new Date().getFullYear()} KKBus Sp. z o.o. Wszelkie prawa zastrzeżone.</p>
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-action transition-colors">Polityka prywatności</Link>
-            <Link href="#" className="hover:text-action transition-colors">Cookies</Link>
+        <div className="border-t border-gray-200 pt-8 flex flex-col items-center justify-center gap-4 text-sm text-text-muted text-center">
+          <p className="font-medium text-gray-500">
+            Projekt realizowany w ramach: Katedra Informatyki Stosowanej M-7, Wydział Mechaniczny, Politechnika Krakowska im. T. Kościuszki
+          </p>
+          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 mt-2">
+            <p>© {new Date().getFullYear()} KKBus Sp. z o.o. Wszelkie prawa zastrzeżone.</p>
+            <div className="flex gap-6">
+              <Link href="#" className="hover:text-action transition-colors">Polityka prywatności</Link>
+              <Link href="#" className="hover:text-action transition-colors">Cookies</Link>
+            </div>
           </div>
         </div>
       </div>
