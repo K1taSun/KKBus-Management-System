@@ -39,10 +39,10 @@ export function Footer() {
             <h4 className="font-semibold text-text-main mb-6">Firma</h4>
             <ul className="space-y-4">
               <li><Link href="/informacje" className="text-text-muted hover:text-action transition-colors">O nas</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Kariera</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Dla kierowców</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Kontakt</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Biuro prasowe</Link></li>
+              <li><Link href="/kariera" className="text-text-muted hover:text-action transition-colors">Kariera</Link></li>
+              <li><Link href="/dla-kierowcow" className="text-text-muted hover:text-action transition-colors">Dla kierowców</Link></li>
+              <li><Link href="/kontakt" className="text-text-muted hover:text-action transition-colors">Kontakt</Link></li>
+              <li><Link href="/biuro-prasowe" className="text-text-muted hover:text-action transition-colors">Biuro prasowe</Link></li>
             </ul>
           </div>
 
