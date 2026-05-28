@@ -67,7 +67,7 @@ export default function DlaKierowcowPage() {
             </p>
           </div>
           <a 
-            href="/driver" 
+            href="/login" 
             className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-action hover:bg-action-hover text-white font-bold transition-all shadow-lg shadow-action/25 text-sm shrink-0"
           >
             <LogIn size={18} /> Zaloguj się do Panelu

@@ -34,8 +34,7 @@ export function Footer() {
             <ul className="space-y-4">
               <li><Link href="/informacje" className="text-text-muted hover:text-action transition-colors">O nas</Link></li>
               <li><Link href="/kariera" className="text-text-muted hover:text-action transition-colors">Kariera</Link></li>
-              <li><Link href="/dla-kierowcow" className="text-text-muted hover:text-action transition-colors">Dla kierowców (Info)</Link></li>
-              <li><Link href="/driver" className="text-text-muted hover:text-action transition-colors font-semibold">Panel Kierowcy (Logowanie)</Link></li>
+              <li><Link href="/dla-kierowcow" className="text-text-muted hover:text-action transition-colors">Dla kierowców</Link></li>
               <li><Link href="/kontakt" className="text-text-muted hover:text-action transition-colors">Kontakt</Link></li>
               <li><Link href="/biuro-prasowe" className="text-text-muted hover:text-action transition-colors">Biuro prasowe</Link></li>
             </ul>

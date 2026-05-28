@@ -45,7 +45,6 @@ export function Navbar() {
           <Link href="#" className="text-white hover:text-action transition-colors text-sm font-medium">Przystanki</Link>
           <Link href="/cennik" className="text-white hover:text-action transition-colors text-sm font-medium">Cennik</Link>
           <Link href="/informacje" className="text-white hover:text-action transition-colors text-sm font-medium">Informacje</Link>
-          <Link href="/driver" className="text-white hover:text-action transition-colors text-sm font-semibold border-l border-white/20 pl-6">Strefa Kierowcy</Link>
         </nav>
 
         {/* Right Actions */}
@@ -53,12 +52,12 @@ export function Navbar() {
           <button className="text-white hover:text-action transition-colors" aria-label="Zmień język">
             <Globe size={20} />
           </button>
-          <Link href="/login" className="text-white hover:text-action transition-colors" aria-label="Zaloguj się">
+          <button className="text-white hover:text-action transition-colors" aria-label="Zaloguj się">
             <User size={20} />
-          </Link>
-          <Link href="/login" className="text-white hover:text-action transition-colors" aria-label="Koszyk">
+          </button>
+          <button className="text-white hover:text-action transition-colors" aria-label="Koszyk">
             <ShoppingCart size={20} />
-          </Link>
+          </button>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -82,19 +81,14 @@ export function Navbar() {
             <Link href="#" className="text-2xl font-medium text-white hover:text-action">Przystanki</Link>
             <Link href="/cennik" className="text-2xl font-medium text-white hover:text-action">Cennik</Link>
             <Link href="/informacje" className="text-2xl font-medium text-white hover:text-action">Informacje</Link>
-            <Link href="/driver" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-bold text-action hover:text-white border-t border-white/10 pt-6">Panel Kierowcy</Link>
           </nav>
           <div className="mt-auto mb-10 flex flex-col gap-4">
-            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-              <Button variant="outline" className="w-full text-white border-white hover:bg-white hover:text-primary justify-center gap-2">
-                <User size={18} /> Zaloguj się
-              </Button>
-            </Link>
-            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-              <Button variant="default" className="w-full justify-center gap-2 bg-action hover:bg-action-hover text-white">
-                <ShoppingCart size={18} /> Mój koszyk
-              </Button>
-            </Link>
+            <Button variant="outline" className="w-full text-white border-white hover:bg-white hover:text-primary justify-center gap-2">
+              <User size={18} /> Zaloguj się
+            </Button>
+            <Button variant="default" className="w-full justify-center gap-2 bg-action hover:bg-action-hover text-white">
+              <ShoppingCart size={18} /> Mój koszyk
+            </Button>
           </div>
         </div>
       </div>
