@@ -30,8 +30,8 @@ export function Footer() {
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Rozkład jazdy</Link></li>
               <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Przystanki i mapy</Link></li>
               <li><Link href="/cennik" className="text-text-muted hover:text-action transition-colors">Cennik biletów</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Regulamin przewozów</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">FAQ</Link></li>
+              <li><Link href="/regulamin" className="text-text-muted hover:text-action transition-colors">Regulamin przewozów</Link></li>
+              <li><Link href="/faq" className="text-text-muted hover:text-action transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
