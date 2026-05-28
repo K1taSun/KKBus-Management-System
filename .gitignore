@@ -62,3 +62,11 @@ Desktop.ini
 *.sln
 *.sw?
 *.code-workspace
+
+# ─── Narzędzia webowe i cache ────────────────────────────────────────
+.turbo/
+.npm/
+.pnpm-store/
+.yarn-state/
+.cache/
+

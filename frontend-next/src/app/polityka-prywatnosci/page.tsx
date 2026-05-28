@@ -1,4 +1,4 @@
-import { Shield, Eye, Lock, UserCheck, Mail } from "lucide-react";
+import { Shield, Eye, Lock, UserCheck } from "lucide-react";
 
 export default function PolitykaPrywatnosciPage() {
   return (

@@ -4,9 +4,7 @@ import { useState } from "react";
 import { 
   Cookie, 
   HelpCircle, 
-  ShieldCheck, 
-  Check, 
-  X 
+  ShieldCheck
 } from "lucide-react";
 
 export default function CookiesPage() {
