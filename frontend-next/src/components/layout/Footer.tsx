@@ -69,8 +69,8 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 mt-2">
             <p>© {new Date().getFullYear()} KKBus Sp. z o.o. Wszelkie prawa zastrzeżone.</p>
             <div className="flex gap-6">
-              <Link href="#" className="hover:text-action transition-colors">Polityka prywatności</Link>
-              <Link href="#" className="hover:text-action transition-colors">Cookies</Link>
+              <Link href="/polityka-prywatnosci" className="hover:text-action transition-colors">Polityka prywatności</Link>
+              <Link href="/cookies" className="hover:text-action transition-colors">Cookies</Link>
             </div>
           </div>
         </div>
