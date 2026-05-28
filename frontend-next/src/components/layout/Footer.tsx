@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { MessageCircle, Mail, Globe, Hash } from "lucide-react";
 
 export function Footer() {
   return (
@@ -16,12 +15,7 @@ export function Footer() {
             <p className="text-text-muted mb-6">
               Nowoczesne linie autokarowe na trasie Kraków ↔ Katowice. Podróżuj bezpiecznie, wygodnie i zawsze na czas.
             </p>
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-gray-400 hover:text-action transition-colors"><Globe size={20} /></a>
-              <a href="#" className="text-gray-400 hover:text-action transition-colors"><MessageCircle size={20} /></a>
-              <a href="#" className="text-gray-400 hover:text-action transition-colors"><Hash size={20} /></a>
-              <a href="#" className="text-gray-400 hover:text-action transition-colors"><Mail size={20} /></a>
-            </div>
+
           </div>
 
           <div>
@@ -69,8 +63,8 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 mt-2">
             <p>© {new Date().getFullYear()} KKBus Sp. z o.o. Wszelkie prawa zastrzeżone.</p>
             <div className="flex gap-6">
-              <Link href="#" className="hover:text-action transition-colors">Polityka prywatności</Link>
-              <Link href="#" className="hover:text-action transition-colors">Cookies</Link>
+              <Link href="/polityka-prywatnosci" className="hover:text-action transition-colors">Polityka prywatności</Link>
+              <Link href="/cookies" className="hover:text-action transition-colors">Cookies</Link>
             </div>
           </div>
         </div>
