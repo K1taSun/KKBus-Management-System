@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, User, ShoppingCart, Globe } from "lucide-react";
+import { Menu, X, User, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CartButton } from "@/components/cart/CartButton";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,9 +56,7 @@ export function Navbar() {
           <button className="text-white hover:text-action transition-colors" aria-label="Zaloguj się">
             <User size={20} />
           </button>
-          <button className="text-white hover:text-action transition-colors" aria-label="Koszyk">
-            <ShoppingCart size={20} />
-          </button>
+          <CartButton />
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -86,9 +85,7 @@ export function Navbar() {
             <Button variant="outline" className="w-full text-white border-white hover:bg-white hover:text-primary justify-center gap-2">
               <User size={18} /> Zaloguj się
             </Button>
-            <Button variant="default" className="w-full justify-center gap-2 bg-action hover:bg-action-hover text-white">
-              <ShoppingCart size={18} /> Mój koszyk
-            </Button>
+            <CartButton mobile />
           </div>
         </div>
       </div>
