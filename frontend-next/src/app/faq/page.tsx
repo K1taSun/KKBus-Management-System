@@ -213,7 +213,7 @@ export default function FAQPage() {
               </div>
               <h3 className="text-xl font-bold text-primary mb-2">Brak wyników wyszukiwania</h3>
               <p className="text-text-muted max-w-sm mx-auto">
-                Nie znaleźliśmy odpowiedzi na Twoje zapytanie: <strong className="text-action">"{searchQuery}"</strong>. Spróbuj użyć innych słów kluczowych lub zmień wybraną kategorię.
+                Nie znaleźliśmy odpowiedzi na Twoje zapytanie: <strong className="text-action">&quot;{searchQuery}&quot;</strong>. Spróbuj użyć innych słów kluczowych lub zmień wybraną kategorię.
               </p>
             </div>
           )}
