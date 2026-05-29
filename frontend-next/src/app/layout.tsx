@@ -16,8 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl">
-
-     
+      <body>
+        <CartProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
