@@ -69,6 +69,7 @@ export const translations = {
     "seats.none": "Brak",
     "seats.total": "Do zapłaty",
     "seats.confirm": "Kupuję i Rezerwuję",
+    "seats.addToCart": "Dodaj do koszyka",
     "seats.success": "Rezerwacja zatwierdzona! Zarezerwowano miejsca",
     "seats.disclaimer": "Klikając przycisk automatycznie zalogujesz się jako klient testowy (Jan Kowalski) i opłacisz bilet.",
 
@@ -290,6 +291,7 @@ export const translations = {
     "seats.none": "None",
     "seats.total": "Total due",
     "seats.confirm": "Buy & Book",
+    "seats.addToCart": "Add to Cart",
     "seats.success": "Reservation confirmed! Booked seats",
     "seats.disclaimer": "Clicking the button will automatically log you in as a test user (Jan Kowalski) and purchase the ticket.",
 

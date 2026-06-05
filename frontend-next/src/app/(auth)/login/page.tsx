@@ -67,7 +67,6 @@ export default function LoginPage() {
       await apiPost("/auth/login", { email, password });
       router.push("/dashboard");
     } catch (err: any) {
-      console.error("Login error:", err);
       setError(err.message || tLocal.errorDefault);
       setLoading(false);
     }

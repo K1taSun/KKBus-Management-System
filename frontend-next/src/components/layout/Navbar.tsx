@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/LanguageContext";
 import { apiGet } from "@/lib/api";
+import { useCart } from "@/lib/CartContext";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,6 +16,7 @@ export function Navbar() {
   const pathname = usePathname();
   const { t, language, toggleLanguage } = useTranslation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { cartItems, setCartOpen } = useCart();
 
   useEffect(() => {
     apiGet("/auth/profile")
@@ -71,8 +73,18 @@ export function Navbar() {
           <Link href={isLoggedIn ? "/dashboard" : "/login"} className="text-white hover:text-action transition-colors" aria-label={isLoggedIn ? t("nav.profile") : t("nav.login")} title={isLoggedIn ? t("nav.profile") : t("nav.login")}>
             <User size={20} />
           </Link>
-          <button className="text-white hover:text-action transition-colors" aria-label={t("nav.cart")} title={t("nav.cart")}>
+          <button
+            onClick={() => setCartOpen(true)}
+            className="text-white hover:text-action transition-colors relative"
+            aria-label={t("nav.cart")}
+            title={t("nav.cart")}
+          >
             <ShoppingCart size={20} />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-action text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse">
+                {cartItems.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -113,8 +125,20 @@ export function Navbar() {
                 <User size={18} /> {isLoggedIn ? t("nav.profile") : t("nav.login")}
               </Button>
             </Link>
-            <Button variant="default" className="w-full justify-center gap-2 bg-action hover:bg-action-hover text-white">
+            <Button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setCartOpen(true);
+              }}
+              variant="default"
+              className="w-full justify-center gap-2 bg-action hover:bg-action-hover text-white relative"
+            >
               <ShoppingCart size={18} /> {t("nav.myCart")}
+              {cartItems.length > 0 && (
+                <span className="bg-white text-action text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center ml-1">
+                  {cartItems.length}
+                </span>
+              )}
             </Button>
           </div>
         </div>

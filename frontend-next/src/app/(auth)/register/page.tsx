@@ -129,7 +129,6 @@ export default function RegisterPage() {
       
       setSuccessClientNumber(res.clientNumber);
     } catch (err: any) {
-      console.error("Registration error:", err);
       setError(err.message || "Błąd podczas rejestracji.");
     } finally {
       setLoading(false);

@@ -3,6 +3,8 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { CartProvider } from "@/lib/CartContext";
+import { CartDrawer } from "@/components/layout/CartDrawer";
 
 export const metadata: Metadata = {
   title: "KKBus",
@@ -18,9 +20,12 @@ export default function RootLayout({
     <html lang="pl">
       <body className="antialiased bg-background-main text-text-main flex flex-col min-h-screen">
         <LanguageProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <CartProvider>
+            <Navbar />
+            {children}
+            <Footer />
+            <CartDrawer />
+          </CartProvider>
         </LanguageProvider>
       </body>
     </html>

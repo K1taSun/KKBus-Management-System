@@ -33,10 +33,18 @@ export class PublicInfoService {
         r.name as route_name,
         r.total_distance_km,
         b.model as bus_model,
-        b.capacity
+        b.registration_number,
+        b.capacity,
+        b.capacity - COALESCE(res.booked, 0) as available_seats
       FROM schedules s
       JOIN routes r ON s.route_id = r.id
       JOIN buses b ON s.bus_id = b.id
+      LEFT JOIN (
+        SELECT schedule_id, COUNT(*) as booked
+        FROM reservations
+        WHERE status != 'Anulowana'
+        GROUP BY schedule_id
+      ) res ON res.schedule_id = s.id
       WHERE s.departure_time >= NOW()
       ORDER BY s.departure_time ASC
     `);
