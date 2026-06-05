@@ -70,3 +70,10 @@ Desktop.ini
 .yarn-state/
 .cache/
 
+# ─── Scratch / pliki tymczasowe ──────────────────────────────────────
+scratch/
+**/scratch/
+*.pyc
+__pycache__/
+
+

@@ -1,10 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import { SearchWidget } from "./SearchWidget";
+import { useTranslation } from "@/lib/LanguageContext";
 
 // Base64 encoded tiny blur image
 const blurData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 export function HeroSection() {
+  const { t } = useTranslation();
+
   return (
     <section className="relative w-full">
       {/* Background Image Container */}
@@ -24,18 +29,19 @@ export function HeroSection() {
         {/* Hero Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight max-w-4xl drop-shadow-md">
-            Podróżuj wygodnie, <span className="text-action">tanio</span> i na czas
+            {t("hero.title")}<span className="text-action">{t("hero.titleHighlight")}</span>{t("hero.titleEnd")}
           </h1>
           <h2 className="text-lg md:text-2xl text-gray-200 font-medium max-w-2xl drop-shadow-sm">
-            Znajdź idealne połączenie na szybkiej i wygodnej trasie Kraków ↔ Katowice.
+            {t("hero.subtitle")}
           </h2>
         </div>
       </div>
 
       {/* Floating Search Widget */}
-      <div className="container mx-auto px-4 md:px-6">
+      <div id="search-widget-section" className="container mx-auto px-4 md:px-6">
         <SearchWidget />
       </div>
     </section>
   );
 }
+

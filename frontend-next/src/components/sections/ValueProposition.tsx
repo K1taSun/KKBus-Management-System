@@ -1,36 +1,41 @@
-import { Wifi, Sofa, Plug, Leaf } from "lucide-react";
+"use client";
 
-const benefits = [
-  {
-    icon: <Wifi size={40} className="text-action" />,
-    title: "Darmowe Wi-Fi",
-    description: "Szybki internet na pokładzie pozwala pracować lub oglądać filmy przez całą podróż.",
-  },
-  {
-    icon: <Sofa size={40} className="text-action" />,
-    title: "Wygodne fotele",
-    description: "Dużo miejsca na nogi i regulowane oparcia gwarantują relaks nawet na długich trasach.",
-  },
-  {
-    icon: <Plug size={40} className="text-action" />,
-    title: "Gniazdka i USB",
-    description: "Ładuj swoje urządzenia w trakcie jazdy dzięki gniazdkom 230V i portom USB przy każdym fotelu.",
-  },
-  {
-    icon: <Leaf size={40} className="text-action" />,
-    title: "Ekologiczna podróż",
-    description: "Nasze nowoczesne autokary spełniają najwyższe normy emisji spalin, dbając o środowisko.",
-  },
-];
+import { Wifi, Sofa, Plug, Leaf } from "lucide-react";
+import { useTranslation } from "@/lib/LanguageContext";
 
 export function ValueProposition() {
+  const { t } = useTranslation();
+
+  const benefits = [
+    {
+      icon: <Wifi size={40} className="text-action" />,
+      title: t("val.wifi"),
+      description: t("val.wifiDesc"),
+    },
+    {
+      icon: <Sofa size={40} className="text-action" />,
+      title: t("val.seats"),
+      description: t("val.seatsDesc"),
+    },
+    {
+      icon: <Plug size={40} className="text-action" />,
+      title: t("val.power"),
+      description: t("val.powerDesc"),
+    },
+    {
+      icon: <Leaf size={40} className="text-action" />,
+      title: t("val.eco"),
+      description: t("val.ecoDesc"),
+    },
+  ];
+
   return (
     <section className="py-20 md:py-32 bg-background-main">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Dlaczego warto wybrać KKBus?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">{t("val.title")}</h2>
           <p className="text-lg text-text-muted">
-            Stawiamy na najwyższy komfort i bezpieczeństwo. Zobacz, co przygotowaliśmy dla Ciebie na pokładzie.
+            {t("val.subtitle")}
           </p>
         </div>
 
@@ -51,3 +56,4 @@ export function ValueProposition() {
     </section>
   );
 }
+

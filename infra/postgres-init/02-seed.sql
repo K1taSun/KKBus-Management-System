@@ -21,22 +21,22 @@ INSERT INTO routes (name, total_distance_km) VALUES
 INSERT INTO users (id, email, password_hash, first_name, last_name, phone, role_id) VALUES
   ('a0000000-0000-0000-0000-000000000001',
    'klient@kkbus.pl',
-   '$2b$10$KIXy4.8/.7V1rE1bB3PElO1e8YWfnV4S4yq3XhCJCR21k.JHsGhpa',
+   '$2b$10$7yqCCa50yoa5eQy1IRa8xOsXo1Ta6CsHQs3ceMjmPMQW9B3Qgq87C',
    'Jan', 'Kowalski', '600100200', 1),
 
   ('a0000000-0000-0000-0000-000000000002',
    'kierowca@kkbus.pl',
-   '$2b$10$KIXy4.8/.7V1rE1bB3PElO1e8YWfnV4S4yq3XhCJCR21k.JHsGhpa',
+   '$2b$10$7yqCCa50yoa5eQy1IRa8xOsXo1Ta6CsHQs3ceMjmPMQW9B3Qgq87C',
    'Marek', 'Nowak', '700300400', 2),
 
   ('a0000000-0000-0000-0000-000000000003',
    'sekretariat@kkbus.pl',
-   '$2b$10$KIXy4.8/.7V1rE1bB3PElO1e8YWfnV4S4yq3XhCJCR21k.JHsGhpa',
+   '$2b$10$7yqCCa50yoa5eQy1IRa8xOsXo1Ta6CsHQs3ceMjmPMQW9B3Qgq87C',
    'Anna', 'Wiśniewska', '500600700', 3),
 
   ('a0000000-0000-0000-0000-000000000004',
    'wlasciciel@kkbus.pl',
-   '$2b$10$KIXy4.8/.7V1rE1bB3PElO1e8YWfnV4S4yq3XhCJCR21k.JHsGhpa',
+   '$2b$10$7yqCCa50yoa5eQy1IRa8xOsXo1Ta6CsHQs3ceMjmPMQW9B3Qgq87C',
    'Krzysztof', 'Zieliński', '600900800', 4);
 
 -- Portfele lojalnościowe dla klientów
@@ -79,3 +79,14 @@ INSERT INTO schedules (route_id, bus_id, driver_id, departure_time, arrival_time
 -- Przykładowa rezerwacja dla klienta testowego
 INSERT INTO reservations (schedule_id, user_id, seat_number, status) VALUES
   (1, 'a0000000-0000-0000-0000-000000000001', 12, 'Potwierdzona');
+
+-- Profil klienta dla Jana Kowalskiego
+INSERT INTO client_profiles (user_id, date_of_birth, client_number, loyalty_opt_in) VALUES
+  ('a0000000-0000-0000-0000-000000000001', '1995-04-12', 'KKB-2026-000001', TRUE);
+
+-- Katalog nagród lojalnościowych
+INSERT INTO loyalty_rewards (name, required_points, is_active) VALUES
+  ('Darmowy Bilet Kraków-Katowice (Jednorazowy)', 200, TRUE),
+  ('Voucher rabatowy -50% na kolejny przejazd', 100, TRUE),
+  ('Voucher rabatowy -20% na kolejny przejazd', 50, TRUE);
+

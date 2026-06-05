@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslation } from "@/lib/LanguageContext";
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-background-main border-t border-gray-200 pt-16 pb-8">
       <div className="container mx-auto px-4 md:px-6">
@@ -13,44 +18,42 @@ export function Footer() {
               </span>
             </div>
             <p className="text-text-muted mb-6">
-              Nowoczesne linie autokarowe na trasie Kraków ↔ Katowice. Podróżuj bezpiecznie, wygodnie i zawsze na czas.
+              {t("footer.desc")}
             </p>
 
           </div>
 
           <div>
-            <h4 className="font-semibold text-text-main mb-6">Informacje</h4>
+            <h4 className="font-semibold text-text-main mb-6">{t("nav.info")}</h4>
             <ul className="space-y-4">
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Rozkład jazdy</Link></li>
-              <li><Link href="#" className="text-text-muted hover:text-action transition-colors">Przystanki i mapy</Link></li>
-              <li><Link href="/cennik" className="text-text-muted hover:text-action transition-colors">Cennik biletów</Link></li>
-              <li><Link href="/regulamin" className="text-text-muted hover:text-action transition-colors">Regulamin przewozów</Link></li>
-              <li><Link href="/faq" className="text-text-muted hover:text-action transition-colors">FAQ</Link></li>
+              <li><Link href="/rozklad-jazdy" className="text-text-muted hover:text-action transition-colors">{t("footer.timetable")}</Link></li>
+              <li><Link href="/przystanki" className="text-text-muted hover:text-action transition-colors">{t("footer.stopsAndMaps")}</Link></li>
+              <li><Link href="/cennik" className="text-text-muted hover:text-action transition-colors">{t("footer.pricing")}</Link></li>
+              <li><Link href="/regulamin" className="text-text-muted hover:text-action transition-colors">{t("footer.terms")}</Link></li>
+              <li><Link href="/faq" className="text-text-muted hover:text-action transition-colors">{t("footer.faq")}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-text-main mb-6">Firma</h4>
+            <h4 className="font-semibold text-text-main mb-6">{t("footer.company")}</h4>
             <ul className="space-y-4">
-              <li><Link href="/informacje" className="text-text-muted hover:text-action transition-colors">O nas</Link></li>
-              <li><Link href="/kariera" className="text-text-muted hover:text-action transition-colors">Kariera</Link></li>
-              <li><Link href="/dla-kierowcow" className="text-text-muted hover:text-action transition-colors">Dla kierowców</Link></li>
-              <li><Link href="/kontakt" className="text-text-muted hover:text-action transition-colors">Kontakt</Link></li>
-              <li><Link href="/biuro-prasowe" className="text-text-muted hover:text-action transition-colors">Biuro prasowe</Link></li>
+              <li><Link href="/informacje" className="text-text-muted hover:text-action transition-colors">{t("footer.aboutUs")}</Link></li>
+              <li><Link href="/kontakt" className="text-text-muted hover:text-action transition-colors">{t("footer.contact")}</Link></li>
+              <li><Link href="/biuro-prasowe" className="text-text-muted hover:text-action transition-colors">{t("footer.press")}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-text-main mb-6">Metody płatności</h4>
+            <h4 className="font-semibold text-text-main mb-6">{t("footer.payments")}</h4>
             <div className="flex gap-2 flex-wrap mb-6">
               <div className="w-12 h-8 bg-gray-100 rounded border flex items-center justify-center text-xs font-bold text-gray-500">BLIK</div>
               <div className="w-12 h-8 bg-gray-100 rounded border flex items-center justify-center text-xs font-bold text-gray-500">VISA</div>
               <div className="w-12 h-8 bg-gray-100 rounded border flex items-center justify-center text-xs font-bold text-gray-500">MC</div>
               <div className="w-12 h-8 bg-gray-100 rounded border flex items-center justify-center text-xs font-bold text-gray-500">P24</div>
             </div>
-            <h4 className="font-semibold text-text-main mb-4 mt-6">Zaufanie</h4>
+            <h4 className="font-semibold text-text-main mb-4 mt-6">{t("footer.trust")}</h4>
             <p className="text-sm text-text-muted">
-              Certyfikat Bezpiecznego Przewoźnika 2026.
+              {t("footer.certificate")}
             </p>
           </div>
 
@@ -58,13 +61,13 @@ export function Footer() {
 
         <div className="border-t border-gray-200 pt-8 flex flex-col items-center justify-center gap-4 text-sm text-text-muted text-center">
           <p className="font-medium text-gray-500">
-            Projekt realizowany w ramach: Katedra Informatyki Stosowanej M-7, Wydział Mechaniczny, Politechnika Krakowska im. T. Kościuszki
+            {t("footer.project")}
           </p>
           <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 mt-2">
-            <p>© {new Date().getFullYear()} KKBus Sp. z o.o. Wszelkie prawa zastrzeżone.</p>
+            <p>© {new Date().getFullYear()} KKBus Sp. z o.o. {t("footer.rights")}</p>
             <div className="flex gap-6">
-              <Link href="/polityka-prywatnosci" className="hover:text-action transition-colors">Polityka prywatności</Link>
-              <Link href="/cookies" className="hover:text-action transition-colors">Cookies</Link>
+              <Link href="/polityka-prywatnosci" className="hover:text-action transition-colors">{t("footer.privacy")}</Link>
+              <Link href="/cookies" className="hover:text-action transition-colors">{t("footer.cookies")}</Link>
             </div>
           </div>
         </div>
@@ -72,3 +75,4 @@ export function Footer() {
     </footer>
   );
 }
+

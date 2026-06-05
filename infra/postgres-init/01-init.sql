@@ -8,7 +8,6 @@ CREATE TABLE roles (
 
 INSERT INTO roles (name) VALUES ('Klient'), ('Kierowca'), ('Sekretariat'), ('Właściciel');
 
--- Główna tabela userów
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(150) UNIQUE NOT NULL,
@@ -19,6 +18,8 @@ CREATE TABLE users (
     role_id INT NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
     failed_login_attempts INT DEFAULT 0,
     no_shows INT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'blocked')),
+    suspended_until TIMESTAMP DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -91,4 +92,40 @@ CREATE TABLE route_reports (
     status VARCHAR(50) DEFAULT 'Oczekujący' CHECK (status IN ('Oczekujący', 'Zatwierdzony', 'Odrzucony')),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Profile Klientów (rozszerzenie tabeli users)
+CREATE TABLE client_profiles (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    date_of_birth DATE NOT NULL,
+    client_number VARCHAR(50) UNIQUE NOT NULL,
+    loyalty_opt_in BOOLEAN DEFAULT FALSE,
+    activation_token VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Próby nieudanych logowań (sliding window brute force protection)
+CREATE TABLE failed_logins (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(150) NOT NULL,
+    attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_failed_logins_email_time ON failed_logins(email, attempted_at);
+
+-- Nagrody Lojalnościowe
+CREATE TABLE loyalty_rewards (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    required_points INT NOT NULL CHECK (required_points > 0),
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Logi transakcji punktów lojalnościowych
+CREATE TABLE loyalty_transactions (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    points_delta INT NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 

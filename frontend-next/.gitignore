@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scratch / temp files
+scratch/
+*.pyc
+__pycache__/
+

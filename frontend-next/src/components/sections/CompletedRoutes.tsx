@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, CheckCircle2, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/lib/LanguageContext";
 
 // Przykładowa baza tras do losowania
 const sampleRoutes = [
@@ -20,6 +21,7 @@ interface CompletedRoute {
 
 export function CompletedRoutes() {
   const [routes, setRoutes] = useState<CompletedRoute[]>([]);
+  const { t } = useTranslation();
 
   // Inicjalizacja początkowych danych
   useEffect(() => {
@@ -67,11 +69,11 @@ export function CompletedRoutes() {
           <div className="md:w-1/2 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Live Status
+              {t("live.status")}
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary">Tysiące zadowolonych pasażerów każdego dnia</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary">{t("live.title")}</h2>
             <p className="text-lg text-text-muted">
-              Nasze autokary bezustannie przemierzają Polskę, dowożąc pasażerów bezpiecznie i na czas. Obserwuj na żywo aktualizowany strumień właśnie zakończonych kursów.
+              {t("live.desc")}
             </p>
           </div>
 
@@ -80,7 +82,7 @@ export function CompletedRoutes() {
               <CardHeader className="bg-primary text-white border-b border-primary-light pb-4">
                 <CardTitle className="flex items-center text-lg gap-2">
                   <CheckCircle2 size={20} className="text-green-400" />
-                  Ostatnio zrealizowane kursy
+                  {t("live.cardTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 bg-slate-50">
@@ -105,7 +107,7 @@ export function CompletedRoutes() {
                               {route.from} <span className="text-action mx-1">→</span> {route.to}
                             </div>
                             <div className="text-xs text-green-600 font-medium mt-0.5 flex items-center gap-1">
-                              <CheckCircle2 size={12} /> Zrealizowane pomyślnie
+                              <CheckCircle2 size={12} /> {t("live.success")}
                             </div>
                           </div>
                         </div>
