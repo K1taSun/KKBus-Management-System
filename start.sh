@@ -59,11 +59,15 @@ elif [ "$choice" == "2" ]; then
     echo -e "${CYAN}4. Uruchamianie Panelu Kierowcy (Frontend na porcie 4040) w nowym oknie Terminala...${NC}"
     osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-driver' && npm install && npm run dev -- -p 4040\""
     
+    echo -e "${CYAN}5. Uruchamianie Modułu Sekretariatu (Frontend na porcie 1010) w nowym oknie Terminala...${NC}"
+    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-secretariat' && npm install && npm run dev\""
+
     echo -e "\n${GREEN}Sukces! Baza danych działa w tle. Backend i frontendy zostały uruchomione w osobnych oknach Terminala.${NC}"
     echo -e "Linki do serwisów:"
-    echo -e "  - Frontend:   ${CYAN}http://localhost:3001${NC}"
-    echo -e "  - Kierowca:   ${CYAN}http://localhost:4040${NC}"
-    echo -e "  - Backend:    ${CYAN}http://localhost:3000/api${NC}"
+    echo -e "  - Frontend (Klient):    ${CYAN}http://localhost:3001${NC}"
+    echo -e "  - Frontend (Kierowca):  ${CYAN}http://localhost:4040${NC}"
+    echo -e "  - Frontend (Sekretariat): ${CYAN}http://localhost:1010${NC}"
+    echo -e "  - Backend API:          ${CYAN}http://localhost:3000/api${NC}"
     echo -e "  - pgAdmin:    ${CYAN}http://localhost:5050${NC}"
     echo
     echo

@@ -7,6 +7,7 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
 import { LoyaltyModule } from './modules/loyalty/loyalty.module';
 import { PublicInfoModule } from './modules/public-info/public-info.module';
 import { DriverModule } from './modules/driver/driver.module';
+import { SecretariatModule } from './modules/secretariat/secretariat.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { DriverModule } from './modules/driver/driver.module';
     LoyaltyModule,
     PublicInfoModule,
     DriverModule,
+    SecretariatModule,
   ],
 })
 export class AppModule {}
