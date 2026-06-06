@@ -26,10 +26,11 @@ fi
 
 echo -e "Wybierz tryb uruchomienia projektu:"
 echo -e "  [1] ${GREEN}Tryb Docker-Only${NC} (Wszystko w kontenerach: baza, backend, frontend)"
-echo -e "  [2] ${YELLOW}Tryb Hybrydowy (Zalecany do developmentu)${NC} (Baza w Dockerze, backend i frontend lokalnie)"
+echo -e "  [2] ${YELLOW}Tryb Hybrydowy (Zalecany do developmentu)${NC} (Baza i pgAdmin w Dockerze, backend i frontend lokalnie)"
+echo -e "  [3] ${RED}Zatrzymaj kontenery${NC} (docker-compose down)"
 echo
 
-read -p "Wprowadź numer wyboru [1-2]: " choice
+read -p "Wprowadź numer wyboru [1-3]: " choice
 
 if [ "$choice" == "1" ]; then
     echo -e "\n${BLUE}Uruchamianie projektu w trybie Docker-Only...${NC}"
@@ -41,8 +42,8 @@ elif [ "$choice" == "2" ]; then
     echo -e "\n${BLUE}Uruchamianie projektu w trybie Hybrydowym...${NC}"
     
     # 1. Uruchomienie bazy danych w Dockerze
-    echo -e "${CYAN}1. Uruchamianie bazy danych PostgreSQL w kontenerze...${NC}"
-    docker-compose -f infra/docker-compose.yml up -d db
+    echo -e "${CYAN}1. Uruchamianie bazy danych PostgreSQL i pgAdmin w kontenerach...${NC}"
+    docker-compose -f infra/docker-compose.yml up -d db pgadmin
     
     # Odczekanie na gotowość bazy
     echo -e "${YELLOW}Czekanie na zainicjalizowanie bazy danych...${NC}"
@@ -55,12 +56,21 @@ elif [ "$choice" == "2" ]; then
     echo -e "${CYAN}3. Uruchamianie Frontend Web w nowym oknie Terminala...${NC}"
     osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-next' && npm install && npm run dev -- -p 3001\""
     
-    echo -e "\n${GREEN}Sukces! Baza danych działa w tle. Backend i frontend zostały uruchomione w osobnych oknach Terminala.${NC}"
+    echo -e "${CYAN}4. Uruchamianie Panelu Kierowcy (Frontend na porcie 4040) w nowym oknie Terminala...${NC}"
+    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-driver' && npm install && npm run dev -- -p 4040\""
+    
+    echo -e "\n${GREEN}Sukces! Baza danych działa w tle. Backend i frontendy zostały uruchomione w osobnych oknach Terminala.${NC}"
     echo -e "Linki do serwisów:"
     echo -e "  - Frontend:   ${CYAN}http://localhost:3001${NC}"
+    echo -e "  - Kierowca:   ${CYAN}http://localhost:4040${NC}"
     echo -e "  - Backend:    ${CYAN}http://localhost:3000/api${NC}"
     echo -e "  - pgAdmin:    ${CYAN}http://localhost:5050${NC}"
     echo
+    echo
+elif [ "$choice" == "3" ]; then
+    echo -e "\n${RED}Zatrzymywanie wszystkich kontenerów...${NC}"
+    docker-compose -f infra/docker-compose.yml down
+    echo -e "${GREEN}Kontenery zostały zatrzymane.${NC}"
 else
     echo -e "${RED}Nieprawidłowy wybór.${NC}"
     exit 1

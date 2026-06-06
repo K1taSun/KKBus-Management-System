@@ -21,6 +21,7 @@ interface Profile {
   lastName: string;
   phone: string;
   status: string;
+  role?: string;
   createdAt: string;
   dateOfBirth: string;
   clientNumber: string;
@@ -38,6 +39,7 @@ interface Reservation {
   price_base: string;
   route_name: string;
   total_distance_km: number;
+  stops?: string[];
 }
 
 interface LoyaltyReward {
@@ -273,6 +275,16 @@ export default function ClientDashboard() {
           <p className="text-text-muted mt-1">
             {t("dash.clientNumber")}: <span className="font-mono font-semibold text-primary">{profile.clientNumber}</span>
           </p>
+          {profile.role === 'Kierowca' && (
+            <div className="mt-4">
+              <button 
+                onClick={() => window.location.href = 'http://localhost:4040'}
+                className="bg-action hover:bg-action-hover text-white px-6 py-2 rounded-lg font-medium text-sm transition-colors"
+              >
+                🚌 Przejdź do Panelu Kierowcy
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Tab Navigation */}
@@ -338,12 +350,19 @@ export default function ClientDashboard() {
                 {activeReservations.length > 0 ? (
                   <div className="mt-3 space-y-2">
                     {activeReservations.slice(0, 2).map((r) => (
-                      <div key={r.id} className="text-sm text-text-muted flex items-center gap-2">
-                        <MapPin size={14} className="text-action shrink-0" />
-                        <span className="truncate">{r.route_name}</span>
-                        <span className="text-xs opacity-70 ml-auto whitespace-nowrap">
-                          {formatDateTime(r.departure_time)}
-                        </span>
+                      <div key={r.id} className="text-sm flex flex-col gap-1 mb-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                        <div className="flex items-start gap-2 text-primary">
+                          <MapPin size={14} className="text-action shrink-0 mt-0.5" />
+                          <span className="font-medium break-words leading-tight">{r.route_name}</span>
+                          <span className="text-xs opacity-70 ml-auto whitespace-nowrap mt-0.5">
+                            {formatDateTime(r.departure_time)}
+                          </span>
+                        </div>
+                        {r.stops && r.stops.length > 0 && (
+                          <div className="text-xs text-text-muted pl-6 italic">
+                            Przez: {r.stops.join(" ➔ ")}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -419,7 +438,14 @@ export default function ClientDashboard() {
 
                         return (
                           <tr key={r.id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-5 py-4 font-medium text-primary">{r.route_name}</td>
+                            <td className="px-5 py-4 font-medium text-primary">
+                              <div>{r.route_name}</div>
+                              {r.stops && r.stops.length > 0 && (
+                                <div className="text-xs text-text-muted font-normal mt-1.5 opacity-80 max-w-md break-words leading-relaxed">
+                                  {r.stops.join(" ➔ ")}
+                                </div>
+                              )}
+                            </td>
                             <td className="px-5 py-4 text-text-muted">{formatDateTime(r.departure_time)}</td>
                             <td className="px-5 py-4 text-center">
                               <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary font-bold text-xs">

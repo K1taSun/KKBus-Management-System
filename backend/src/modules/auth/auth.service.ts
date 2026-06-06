@@ -152,10 +152,12 @@ export class AuthService {
     const res = await this.dataSource.query(
       `SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.status, u.created_at,
               cp.date_of_birth, cp.client_number, cp.loyalty_opt_in,
-              COALESCE(lp.points_balance, 0) as points_balance
+              COALESCE(lp.points_balance, 0) as points_balance,
+              r.name as role_name
        FROM users u
        LEFT JOIN client_profiles cp ON u.id = cp.user_id
        LEFT JOIN loyalty_points lp ON u.id = lp.user_id
+       LEFT JOIN roles r ON u.role_id = r.id
        WHERE u.id = $1`,
       [userId],
     );
@@ -177,6 +179,7 @@ export class AuthService {
       clientNumber: user.client_number,
       loyaltyOptIn: user.loyalty_opt_in,
       pointsBalance: parseInt(user.points_balance, 10),
+      role: user.role_name,
     };
   }
 
@@ -214,7 +217,7 @@ export class AuthService {
     return this.dataSource.query(
       `SELECT r.id, r.seat_number, r.status, r.created_at,
               s.departure_time, s.arrival_time, s.price_base,
-              ro.name as route_name, ro.total_distance_km
+              ro.name as route_name, ro.stops, ro.total_distance_km
        FROM reservations r
        JOIN schedules s ON r.schedule_id = s.id
        JOIN routes ro ON s.route_id = ro.id

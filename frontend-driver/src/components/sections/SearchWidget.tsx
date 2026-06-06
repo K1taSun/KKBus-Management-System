@@ -59,7 +59,6 @@ interface TimetableItem {
   registration_number: string;
   capacity: number;
   available_seats: number;
-  stops?: string[];
 }
 
 export function SearchWidget() {
@@ -377,12 +376,7 @@ export function SearchWidget() {
                     </div>
                     <div>
                       <h4 className="font-bold text-primary text-lg">{item.route_name}</h4>
-                      {item.stops && item.stops.length > 0 && (
-                        <div className="text-xs text-text-muted font-normal italic mt-1.5 break-words leading-relaxed max-w-sm">
-                          Przez: {item.stops.join(" ➔ ")}
-                        </div>
-                      )}
-                      <p className="text-xs text-text-muted mt-1">
+                      <p className="text-xs text-text-muted mt-0.5">
                         {t("results.model")}: <span className="font-semibold text-primary">{item.bus_model}</span> ({item.registration_number})
                       </p>
                       <div className="flex items-center gap-3 mt-2 text-xs font-semibold">

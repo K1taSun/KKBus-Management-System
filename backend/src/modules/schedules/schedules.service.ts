@@ -18,7 +18,8 @@ export class SchedulesService {
         s.price_base,
         b.model       AS bus_model,
         b.capacity,
-        (b.capacity - COUNT(res.id)) AS available_seats
+        (b.capacity - COUNT(res.id)) AS available_seats,
+        r.stops
       FROM schedules s
       JOIN routes r  ON s.route_id = r.id
       JOIN buses b   ON s.bus_id   = b.id
@@ -45,7 +46,7 @@ export class SchedulesService {
     }
 
     sql += `
-      GROUP BY s.id, r.name, r.total_distance_km, s.departure_time,
+      GROUP BY s.id, r.name, r.total_distance_km, r.stops, s.departure_time,
                s.arrival_time, s.price_base, b.model, b.capacity
       ORDER BY s.departure_time ASC
     `;
@@ -65,6 +66,7 @@ export class SchedulesService {
          b.model       AS bus_model,
          b.capacity,
          (b.capacity - COUNT(res.id)) AS available_seats,
+         r.stops,
          ARRAY_AGG(res.seat_number)   AS booked_seats
        FROM schedules s
        JOIN routes r  ON s.route_id = r.id
@@ -72,7 +74,7 @@ export class SchedulesService {
        LEFT JOIN reservations res
               ON res.schedule_id = s.id AND res.status != 'Anulowana'
        WHERE s.id = $1
-       GROUP BY s.id, r.name, r.total_distance_km, s.departure_time,
+       GROUP BY s.id, r.name, r.total_distance_km, r.stops, s.departure_time,
                 s.arrival_time, s.price_base, b.model, b.capacity`,
       [id],
     );

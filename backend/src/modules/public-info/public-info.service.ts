@@ -31,6 +31,7 @@ export class PublicInfoService {
         s.arrival_time,
         s.price_base,
         r.name as route_name,
+        r.stops,
         r.total_distance_km,
         b.model as bus_model,
         b.registration_number,

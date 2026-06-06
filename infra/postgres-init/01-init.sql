@@ -37,7 +37,8 @@ CREATE TABLE buses (
 CREATE TABLE routes (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
-    total_distance_km INT NOT NULL CHECK (total_distance_km > 0)
+    total_distance_km INT NOT NULL CHECK (total_distance_km > 0),
+    stops JSONB DEFAULT '[]'::jsonb
 );
 
 -- Rozkład (Kursy)
@@ -88,7 +89,9 @@ CREATE TABLE route_reports (
     schedule_id INT NOT NULL UNIQUE REFERENCES schedules(id) ON DELETE RESTRICT,
     actual_passengers INT NOT NULL CHECK (actual_passengers >= 0),
     fuel_liters DECIMAL(10,2) NOT NULL CHECK (fuel_liters >= 0),
+    fuel_cost DECIMAL(10,2) NOT NULL CHECK (fuel_cost >= 0),
     distance_km INT NOT NULL CHECK (distance_km >= 0),
+    average_fuel_consumption DECIMAL(10,2),
     status VARCHAR(50) DEFAULT 'Oczekujący' CHECK (status IN ('Oczekujący', 'Zatwierdzony', 'Odrzucony')),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -100,6 +103,60 @@ CREATE TABLE client_profiles (
     client_number VARCHAR(50) UNIQUE NOT NULL,
     loyalty_opt_in BOOLEAN DEFAULT FALSE,
     activation_token VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Inspekcje pojazdów (Check-in / Check-out)
+CREATE TABLE vehicle_inspections (
+    id SERIAL PRIMARY KEY,
+    schedule_id INT REFERENCES schedules(id) ON DELETE SET NULL,
+    driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('PRE_TRIP', 'POST_TRIP')),
+    mileage INT NOT NULL CHECK (mileage >= 0),
+    fuel_level INT NOT NULL CHECK (fuel_level >= 0 AND fuel_level <= 100),
+    lights_ok BOOLEAN DEFAULT TRUE,
+    tires_ok BOOLEAN DEFAULT TRUE,
+    interior_ok BOOLEAN DEFAULT TRUE,
+    fluids_ok BOOLEAN DEFAULT TRUE,
+    emergency_equipment_ok BOOLEAN DEFAULT TRUE,
+    keys_returned BOOLEAN DEFAULT NULL, -- Używane tylko dla POST_TRIP
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Usterki zgłaszane przez kierowców
+CREATE TABLE vehicle_defects (
+    id SERIAL PRIMARY KEY,
+    bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+    driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    schedule_id INT REFERENCES schedules(id) ON DELETE SET NULL,
+    severity VARCHAR(20) NOT NULL CHECK (severity IN ('NISKA', 'ŚREDNIA', 'KRYTYCZNA')),
+    description TEXT NOT NULL,
+    photo_url VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'OTWARTA' CHECK (status IN ('OTWARTA', 'W_NAPRAWIE', 'ZAMKNIĘTA')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Sygnały SOS (Zdarzenia awaryjne)
+CREATE TABLE sos_alerts (
+    id SERIAL PRIMARY KEY,
+    driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    schedule_id INT REFERENCES schedules(id) ON DELETE SET NULL,
+    bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    resolved BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Cyfrowa teczka pojazdu (Dokumenty)
+CREATE TABLE vehicle_documents (
+    id SERIAL PRIMARY KEY,
+    bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+    doc_type VARCHAR(50) NOT NULL CHECK (doc_type IN ('OC', 'AC', 'PRZEGLĄD_TECHNICZNY')),
+    expiry_date DATE NOT NULL,
+    document_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

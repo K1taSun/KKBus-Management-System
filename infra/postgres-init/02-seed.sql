@@ -11,10 +11,11 @@ INSERT INTO buses (registration_number, model, capacity, status) VALUES
   ('KR 99999', 'MAN Lion''s Coach',   48, 'W serwisie');
 
 -- Trasy
-INSERT INTO routes (name, total_distance_km) VALUES
-  ('Kraków – Katowice',  79),
-  ('Katowice – Kraków',  79),
-  ('Kraków – Katowice (Ekspres)', 74);
+INSERT INTO routes (name, total_distance_km, stops) VALUES
+  ('Kraków – Katowice (Zwykła)',  79, '["Kraków MDA", "Rondo Ofiar Katynia", "Chrzanów", "Jaworzno", "Katowice Sądowa"]'),
+  ('Katowice – Kraków (Zwykła)',  79, '["Katowice Sądowa", "Jaworzno", "Chrzanów", "Rondo Ofiar Katynia", "Kraków MDA"]'),
+  ('Kraków – Katowice (Ekspres)', 74, '["Kraków MDA", "Katowice Sądowa"]'),
+  ('Katowice – Kraków (Ekspres)', 74, '["Katowice Sądowa", "Kraków MDA"]');
 
 -- Użytkownicy testowi (hasła = bcrypt("Test1234!") dla wszystkich)
 -- UWAGA: W środowisku produkcyjnym używać wyłącznie zahashowanych haseł generowanych aplikacyjnie.
@@ -50,17 +51,17 @@ INSERT INTO schedules (route_id, bus_id, driver_id, departure_time, arrival_time
    NOW()::date + '09:15:00'::interval,
    25.00),
 
-  (1, 2, 'a0000000-0000-0000-0000-000000000002',
+  (3, 2, 'a0000000-0000-0000-0000-000000000002',
    NOW()::date + '10:30:00'::interval,
    NOW()::date + '11:45:00'::interval,
-   25.00),
+   35.00),
 
   (2, 1, 'a0000000-0000-0000-0000-000000000002',
    NOW()::date + '14:00:00'::interval,
    NOW()::date + '15:15:00'::interval,
    25.00),
 
-  (3, 2, 'a0000000-0000-0000-0000-000000000002',
+  (4, 2, 'a0000000-0000-0000-0000-000000000002',
    NOW()::date + '16:00:00'::interval,
    NOW()::date + '17:05:00'::interval,
    35.00),
