@@ -2,10 +2,14 @@ import { Injectable, BadRequestException, ConflictException } from '@nestjs/comm
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto, ChangeUserStatusDto, CreateRouteDto, UpdateRouteDto, OverrideScheduleDto, CreatePricingPolicyDto } from './dto/owner.dto';
+import { PublicInfoService } from '../public-info/public-info.service';
 
 @Injectable()
 export class OwnerService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly publicInfoService: PublicInfoService,
+  ) {}
 
   // ==========================================
   // Domain 1: Global User & Role Management
@@ -121,6 +125,10 @@ export class OwnerService {
       [routeId]
     );
     if (res.length === 0) throw new BadRequestException('Route not found');
+
+    // Inwalidacja cache rozkładu jazdy
+    this.publicInfoService.clearTimetableCache();
+
     return res[0];
   }
 
@@ -130,7 +138,7 @@ export class OwnerService {
 
   async getSchedules(date?: string) {
     let query = `
-      SELECT s.id, s.departure_time, s.arrival_time, s.status,
+      SELECT s.id, s.departure_time, s.arrival_time, 'Aktywny' AS status,
              json_build_object('id', u.id, 'first_name', u.first_name, 'last_name', u.last_name) as driver,
              json_build_object('id', b.id, 'registration_number', b.registration_number) as bus,
              json_build_object('name', r.name) as route
@@ -213,6 +221,9 @@ export class OwnerService {
        VALUES ($1, $2, $3, $4, $5, TRUE) RETURNING *`,
       [dto.versionName, dto.basePriceMultiplier, dto.studentDiscountPercent, dto.childDiscountPercent, dto.loyaltyPointValue]
     );
+
+    // Inwalidacja cache cen/zniżek
+    this.publicInfoService.clearPricingCache();
 
     return res[0];
   }

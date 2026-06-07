@@ -5,11 +5,18 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { AssignFleetDto } from './dto/assign-fleet.dto';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { PublicInfoService } from '../public-info/public-info.service';
+import { ReservationsService } from '../reservations/reservations.service';
+import { BookSeatsDto } from '../reservations/dto/book-seats.dto';
 const PdfPrinter = require('pdfmake');
 
 @Injectable()
 export class SecretariatService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly publicInfoService: PublicInfoService,
+    private readonly reservationsService: ReservationsService,
+  ) {}
 
   async createClient(dto: CreateClientDto) {
     const { firstName, lastName, dateOfBirth, email, phone, loyaltyOptIn } = dto;
@@ -142,6 +149,9 @@ export class SecretariatService {
       [routeId, busId, driverId, departure, arrival, priceBase],
     );
 
+    // Inwalidacja cache rozkładu jazdy
+    this.publicInfoService.clearTimetableCache();
+
     return {
       message: 'Schedule created successfully',
       scheduleId: res[0].id,
@@ -161,9 +171,9 @@ export class SecretariatService {
 
     const { departure_time, arrival_time } = scheduleCheck[0];
 
-    // Check Bus Status
+    // Check Bus Status & Capacity
     const busCheck = await this.dataSource.query(
-      'SELECT status FROM buses WHERE id = $1',
+      'SELECT status, capacity FROM buses WHERE id = $1',
       [busId],
     );
     if (busCheck.length === 0) {
@@ -171,6 +181,19 @@ export class SecretariatService {
     }
     if (busCheck[0].status === 'W serwisie' || busCheck[0].status === 'Złom') {
       throw new ConflictException('Vehicle is not available for assignment (in repair or scrapped).');
+    }
+
+    // Check if new bus capacity is smaller than existing confirmed reservations
+    const reservationsCount = await this.dataSource.query(
+      `SELECT COUNT(*) as count FROM reservations WHERE schedule_id = $1 AND status != 'Anulowana'`,
+      [scheduleId]
+    );
+    const passengerCount = parseInt(reservationsCount[0].count, 10);
+    const newCapacity = parseInt(busCheck[0].capacity, 10);
+    if (passengerCount > newCapacity) {
+      throw new ConflictException(
+        `Nie można przypisać pojazdu. Liczba aktywnych rezerwacji (${passengerCount}) przekracza pojemność wybranego autobusu (${newCapacity}).`
+      );
     }
 
     // Check Bus Overlaps (excluding the current schedule)
@@ -192,6 +215,9 @@ export class SecretariatService {
       'UPDATE schedules SET bus_id = $1 WHERE id = $2',
       [busId, scheduleId],
     );
+
+    // Inwalidacja cache rozkładu jazdy
+    this.publicInfoService.clearTimetableCache();
 
     return {
       message: 'Fleet assigned successfully',
@@ -340,5 +366,9 @@ export class SecretariatService {
       [status, busId],
     );
     return { message: 'Bus status updated' };
+  }
+
+  async bookOnBehalfOfClient(clientId: string, dto: BookSeatsDto) {
+    return this.reservationsService.bookSeatsOnBehalf(clientId, dto);
   }
 }

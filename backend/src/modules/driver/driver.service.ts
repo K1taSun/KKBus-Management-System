@@ -67,6 +67,24 @@ export class DriverService {
         throw new BadRequestException('You are not assigned to this schedule.');
       }
 
+      // 1b. Validate passenger lists against reservations on this schedule
+      const passengerCheck = await queryRunner.query(
+        `SELECT user_id FROM reservations WHERE schedule_id = $1 AND status != 'Anulowana'`,
+        [scheduleId]
+      );
+      const validPassengerIds = new Set(passengerCheck.map((r: any) => r.user_id));
+
+      for (const id of presentUserIds) {
+        if (!validPassengerIds.has(id)) {
+          throw new BadRequestException(`Użytkownik o ID ${id} nie posiada rezerwacji na ten kurs.`);
+        }
+      }
+      for (const id of absentUserIds) {
+        if (!validPassengerIds.has(id)) {
+          throw new BadRequestException(`Użytkownik o ID ${id} nie posiada rezerwacji na ten kurs.`);
+        }
+      }
+
       // 2. Business Math: Calculate average fuel consumption per km (cost / total mileage)
       const averageFuelConsumption = distanceKm > 0 ? (fuelCost / distanceKm) : 0;
       const totalPassengers = presentUserIds.length;
@@ -78,14 +96,31 @@ export class DriverService {
         [scheduleId, totalPassengers, fuelLiters, fuelCost, distanceKm, averageFuelConsumption]
       );
 
-      // 4. Update Loyalty Points
+      // 4. Update Loyalty Points and insert transaction logs
       if (presentUserIds.length > 0) {
-        await queryRunner.query(
-          `UPDATE loyalty_points 
-           SET points_balance = points_balance + $1, last_transaction_date = CURRENT_TIMESTAMP 
-           WHERE user_id = ANY($2::uuid[])`,
-          [distanceKm, presentUserIds]
-        );
+        const pointsToAdd = Math.round(distanceKm);
+        if (pointsToAdd > 0) {
+          // Update points balance
+          await queryRunner.query(
+            `UPDATE loyalty_points 
+             SET points_balance = points_balance + $1, last_transaction_date = CURRENT_TIMESTAMP 
+             WHERE user_id = ANY($2::uuid[])`,
+            [pointsToAdd, presentUserIds]
+          );
+
+          // Insert transactions for each present passenger
+          for (const passengerId of presentUserIds) {
+            await queryRunner.query(
+              `INSERT INTO loyalty_transactions (user_id, points_delta, description)
+               VALUES ($1, $2, $3)`,
+              [
+                passengerId,
+                pointsToAdd,
+                `Punkty naliczone za przejazd trasą o długości ${distanceKm} km.`,
+              ]
+            );
+          }
+        }
       }
 
       // 5. Update No-Shows

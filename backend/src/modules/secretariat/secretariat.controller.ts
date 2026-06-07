@@ -9,6 +9,8 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 
+import { BookSeatsDto } from '../reservations/dto/book-seats.dto';
+
 @Controller('secretariat')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('Sekretariat')
@@ -71,5 +73,10 @@ export class SecretariatController {
   @Patch('buses/:id/status')
   updateBusStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.secretariatService.updateBusStatus(+id, status);
+  }
+
+  @Post('reservations/behalf/:clientId')
+  bookOnBehalfOfClient(@Param('clientId') clientId: string, @Body() dto: BookSeatsDto) {
+    return this.secretariatService.bookOnBehalfOfClient(clientId, dto);
   }
 }

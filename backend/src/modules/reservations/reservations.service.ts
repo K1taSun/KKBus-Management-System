@@ -4,10 +4,14 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { BookSeatsDto } from './dto/book-seats.dto';
 import { GuestBookSeatsDto } from './dto/guest-book-seats.dto';
+import { PublicInfoService } from '../public-info/public-info.service';
 
 @Injectable()
 export class ReservationsService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly publicInfoService: PublicInfoService,
+  ) {}
 
   async bookSeats(userId: string, dto: BookSeatsDto) {
     const { scheduleId, seatNumbers } = dto;
@@ -42,17 +46,22 @@ export class ReservationsService {
         );
       }
 
-      // 2. Sprawdzenie szczegółów kursu
+      // 2. Sprawdzenie szczegółów kursu i aktywności trasy
       const scheduleRes = await queryRunner.manager.query(
-        `SELECT s.departure_time, b.capacity
+        `SELECT s.departure_time, b.capacity, r.is_active
          FROM schedules s
          JOIN buses b ON s.bus_id = b.id
+         JOIN routes r ON s.route_id = r.id
          WHERE s.id = $1 FOR UPDATE`, // Blokada na poziomie wiersza
         [scheduleId],
       );
 
       if (scheduleRes.length === 0) {
         throw new BadRequestException('Wybrany kurs nie istnieje.');
+      }
+
+      if (!scheduleRes[0].is_active) {
+        throw new BadRequestException('Nie można rezerwować miejsc na nieaktywnej trasie.');
       }
 
       const { departure_time, capacity } = scheduleRes[0];
@@ -102,6 +111,9 @@ export class ReservationsService {
       }
 
       await queryRunner.commitTransaction();
+
+      // Inwalidacja cache rozkładu jazdy
+      this.publicInfoService.clearTimetableCache();
 
       // Asynchroniczne powiadomienie e-mail (mock)
       this.sendReservationEmailMock(userId, reservationIds);
@@ -159,6 +171,10 @@ export class ReservationsService {
       );
 
       await queryRunner.commitTransaction();
+      
+      // Inwalidacja cache rozkładu jazdy
+      this.publicInfoService.clearTimetableCache();
+
       return { message: 'Rezerwacja została pomyślnie anulowana. Miejsce zostało zwolnione.' };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -236,7 +252,7 @@ export class ReservationsService {
 
       // 2. Pobranie szczegółów kursu
       const scheduleRes = await queryRunner.manager.query(
-        `SELECT s.departure_time, b.capacity, r.name as route_name
+        `SELECT s.departure_time, b.capacity, r.name as route_name, r.is_active
          FROM schedules s
          JOIN buses b ON s.bus_id = b.id
          JOIN routes r ON s.route_id = r.id
@@ -246,6 +262,10 @@ export class ReservationsService {
 
       if (scheduleRes.length === 0) {
         throw new BadRequestException('Wybrany kurs nie istnieje.');
+      }
+
+      if (!scheduleRes[0].is_active) {
+        throw new BadRequestException('Nie można rezerwować miejsc na nieaktywnej trasie.');
       }
 
       const { departure_time, capacity, route_name } = scheduleRes[0];
@@ -296,6 +316,9 @@ export class ReservationsService {
 
       await queryRunner.commitTransaction();
 
+      // Inwalidacja cache rozkładu jazdy
+      this.publicInfoService.clearTimetableCache();
+
       // Asynchroniczne powiadomienie e-mail dla gościa (mock)
       this.sendGuestReservationEmailMock(email, clientNumber, reservationIds, seatNumbers, route_name, departureDate);
 
@@ -338,5 +361,132 @@ export class ReservationsService {
     Odjazd: ${departureTime.toLocaleString('pl-PL')}
     Miejsce(a): ${seatNumbers.join(', ')}
     Rezerwacje: [${reservationIds.join(', ')}]`);
+  }
+
+  async bookSeatsOnBehalf(clientId: string, dto: BookSeatsDto) {
+    const { scheduleId, seatNumbers } = dto;
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
+
+    try {
+      // 1. Sprawdzenie statusu klienta (zawieszenia / blokady / no-shows)
+      const userRes = await queryRunner.manager.query(
+        `SELECT status, suspended_until, no_shows FROM users WHERE id = $1`,
+        [clientId],
+      );
+      if (userRes.length === 0) {
+        throw new BadRequestException('Użytkownik nie istnieje.');
+      }
+      
+      const user = userRes[0];
+      if (user.status === 'blocked') {
+        throw new ForbiddenException('Konto klienta jest trwale zablokowane.');
+      }
+
+      if (user.no_shows >= 3) {
+        throw new ForbiddenException('Konto klienta zablokowane z powodu 3 niezrealizowanych rezerwacji (no-show).');
+      }
+
+      if (user.suspended_until && new Date(user.suspended_until) > new Date()) {
+        throw new ForbiddenException(
+          `Klient ma zablokowaną możliwość rezerwacji ze względu na kary do ${new Date(user.suspended_until).toLocaleString('pl-PL')}.`,
+        );
+      }
+
+      // 2. Sprawdzenie szczegółów kursu i ceny oraz aktywności trasy
+      const scheduleRes = await queryRunner.manager.query(
+        `SELECT s.departure_time, b.capacity, s.price_base, r.is_active
+         FROM schedules s
+         JOIN buses b ON s.bus_id = b.id
+         JOIN routes r ON s.route_id = r.id
+         WHERE s.id = $1 FOR UPDATE`,
+        [scheduleId],
+      );
+
+      if (scheduleRes.length === 0) {
+        throw new BadRequestException('Wybrany kurs nie istnieje.');
+      }
+
+      if (!scheduleRes[0].is_active) {
+        throw new BadRequestException('Nie można rezerwować miejsc na nieaktywnej trasie.');
+      }
+
+      const { departure_time, capacity, price_base } = scheduleRes[0];
+      const departureDate = new Date(departure_time);
+      const now = new Date();
+
+      // Walidacja temporalna: Rezerwacja możliwa najpóźniej na 2h przed odjazdem
+      const hoursUntilDeparture = (departureDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (hoursUntilDeparture < 2) {
+        throw new BadRequestException('Rezerwacja jest możliwa najpóźniej na 2 godziny przed odjazdem.');
+      }
+
+      // Walidacja temporalna: Rezerwacja możliwa maksymalnie 7 dni przed odjazdem
+      const daysUntilDeparture = (departureDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysUntilDeparture > 7) {
+        throw new BadRequestException('Nie można rezerwować miejsc z wyprzedzeniem większym niż 7 dni.');
+      }
+
+      // 3. Walidacja pojemności i poprawności numerów siedzeń
+      for (const seat of seatNumbers) {
+        if (seat < 1 || seat > capacity) {
+          throw new BadRequestException(`Miejsce ${seat} wykracza poza pojemność pojazdu (1-${capacity}).`);
+        }
+      }
+
+      // 4. Sprawdzenie czy wybrane miejsca są już zajęte
+      const occupiedSeatsRes = await queryRunner.manager.query(
+        `SELECT seat_number FROM reservations 
+         WHERE schedule_id = $1 AND status != 'Anulowana' AND seat_number = ANY($2::int[])`,
+         [scheduleId, seatNumbers],
+      );
+
+      if (occupiedSeatsRes.length > 0) {
+        const occupiedList = occupiedSeatsRes.map((r: any) => r.seat_number).join(', ');
+        throw new ConflictException(`Wybrane miejsca (${occupiedList}) są już zajęte.`);
+      }
+
+      const priceBaseVal = parseFloat(price_base || '0');
+      const reservationIds: string[] = [];
+
+      // 5. Zapis rezerwacji jako 'Opłacona' oraz utworzenie powiązanych płatności (natychmiastowych)
+      for (const seat of seatNumbers) {
+        const res = await queryRunner.manager.query(
+          `INSERT INTO reservations (schedule_id, user_id, seat_number, status) 
+           VALUES ($1, $2, $3, 'Opłacona') RETURNING id`,
+          [scheduleId, clientId, seat],
+        );
+        const reservationId = res[0].id;
+        reservationIds.push(reservationId);
+
+        // Zapis natychmiastowej płatności w bazie danych
+        await queryRunner.manager.query(
+          `INSERT INTO payments (reservation_id, amount, status, payment_method)
+           VALUES ($1, $2, 'Zakończona', 'Gotówka/Karta (Sekretariat)')`,
+          [reservationId, priceBaseVal],
+        );
+      }
+
+      await queryRunner.commitTransaction();
+
+      // Inwalidacja cache rozkładu jazdy
+      this.publicInfoService.clearTimetableCache();
+
+      // Asynchroniczne powiadomienie e-mail (mock)
+      this.sendReservationEmailMock(clientId, reservationIds);
+
+      return {
+        message: 'Rezerwacja (opłacona natychmiastowo) została pomyślnie potwierdzona przez Sekretariat.',
+        reservationIds,
+      };
+
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
