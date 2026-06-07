@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { BookSeatsDto } from './dto/book-seats.dto';
 import { GuestBookSeatsDto } from './dto/guest-book-seats.dto';
 
@@ -182,6 +183,7 @@ export class ReservationsService {
       // 1. Sprawdzenie czy użytkownik o takim e-mailu już istnieje
       let userId: string;
       let clientNumber: string;
+      let guestPassword: string | null = null; // zwrócone tylko dla nowych kont gościnnych
 
       const existingUser = await queryRunner.manager.query(
         `SELECT u.id, u.status, u.suspended_until, u.no_shows, cp.client_number
@@ -206,7 +208,11 @@ export class ReservationsService {
         clientNumber = user.client_number || 'KKB-GUEST';
       } else {
         // Tworzymy nowe konto dla gościa na podstawie danych checkoutu
-        const passwordHash = await bcrypt.hash(`Guest_${Math.random().toString(36).substring(2, 10)}`, 10);
+        // Konto gościa — hasło generowane kryptograficznie bezpiecznym RNG.
+        // Zwracamy je w odpowiedzi — jest to jedyna szansa aby gość mógł zalogować się na swoje konto.
+        const tempPassword = crypto.randomBytes(16).toString('hex');
+        guestPassword = tempPassword;
+        const passwordHash = await bcrypt.hash(tempPassword, 12);
         
         const userInsert = await queryRunner.manager.query(
           `INSERT INTO users (email, password_hash, first_name, last_name, phone, role_id, status)
@@ -301,6 +307,14 @@ export class ReservationsService {
         routeName: route_name,
         departureTime: departureDate.toISOString(),
         reservationIds,
+        // Przekazane tylko dla nowo utworzonych kont gościnnych.
+        // Frontend powinien wyświetlić te dane użytkownikowi jednokrotnie.
+        ...(guestPassword !== null && {
+          guestAccount: {
+            note: 'Zostało dla Ciebie utworzone konto. Zaloguj się podanymi danymi aby zarządzać rezerwacją.',
+            password: guestPassword,
+          },
+        }),
       };
 
     } catch (err) {

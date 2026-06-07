@@ -8,9 +8,23 @@ import { JwtStrategy } from './jwt.strategy';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-studencki-sekret',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      useFactory: () => {
+        let secret = process.env.JWT_SECRET;
+        if (!secret) {
+          if (process.env.NODE_ENV === 'production') {
+            throw new Error(
+              'FATAL: Zmienna środowiskowa JWT_SECRET nie jest ustawiona w trybie produkcyjnym.',
+            );
+          }
+          console.warn(
+            'WARNING: Zmienna środowiskowa JWT_SECRET nie jest ustawiona. ' +
+            'Używam domyślnego klucza deweloperskiego. Ustaw bezpieczny klucz w produkcji!',
+          );
+          secret = 'dev-secret-change-me-in-production';
+        }
+        return { secret };
+      },
     }),
   ],
   controllers: [AuthController],

@@ -6,6 +6,15 @@ import { Request } from 'express';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
+    let secret = process.env.JWT_SECRET;
+    if (!secret) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          'FATAL: Zmienna środowiskowa JWT_SECRET nie jest ustawiona w trybie produkcyjnym.',
+        );
+      }
+      secret = 'dev-secret-change-me-in-production';
+    }
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
@@ -27,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'super-studencki-sekret',
+      secretOrKey: secret,
     });
   }
 

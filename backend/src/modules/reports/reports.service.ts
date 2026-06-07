@@ -72,12 +72,21 @@ export class ReportsService {
   }
 
   async getFinancialEstimate() {
+    // Każdy JOIN z rezerwacjami tworzy osobny wiersz per bilet.
+    // SUM(s.price_base) sumuje cenę bazową raz na każdy sprzedany fotel — wynik jest poprawny.
+    // COUNT(res.id) pokazuje liczbę sprzedanych biletów.
     const result = await this.dataSource.query(`
-      SELECT r.name as "Trasa", SUM(s.price_base) as "Szacowany_Przychod"
+      SELECT
+        r.name                    AS "Trasa",
+        COUNT(res.id)             AS "Sprzedane_Bilety",
+        SUM(s.price_base)         AS "Szacowany_Przychod"
       FROM routes r
-      JOIN schedules s ON r.id = s.route_id
-      JOIN reservations res ON s.id = res.schedule_id AND res.status = 'Potwierdzona'
+      JOIN schedules s   ON r.id  = s.route_id
+      JOIN reservations res
+                         ON s.id  = res.schedule_id
+                        AND res.status = 'Potwierdzona'
       GROUP BY r.id, r.name
+      ORDER BY "Szacowany_Przychod" DESC
     `);
 
     return {

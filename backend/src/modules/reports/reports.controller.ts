@@ -1,8 +1,11 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ReportsService } from './reports.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('Właściciel', 'Sekretariat')
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
@@ -17,4 +20,3 @@ export class ReportsController {
     return this.reportsService.getFinancialEstimate();
   }
 }
-// Dodałbym blokadę tylko dla "Właściciela", ale na razie wszyscy w firmie mogą to oglądać.

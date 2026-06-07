@@ -3,9 +3,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { DriverService } from './driver.service';
 import { SubmitReportDto, SetAvailabilityDto, SubmitInspectionDto, SubmitDefectDto, SubmitSOSDto } from './dto/driver.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 @Controller('driver')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('Kierowca')
 export class DriverController {
   constructor(private readonly driverService: DriverService) {}
 
@@ -24,13 +27,10 @@ export class DriverController {
   @Get('schedules/:scheduleId/manifest/pdf')
   async getPassengerManifestPdf(@Request() req, @Param('scheduleId') scheduleId: string) {
     const driverId = req.user.userId;
-    const { stream, filename } = await this.driverService.generateManifestPdf(driverId, parseInt(scheduleId, 10));
-    
-    // Using simple Express Response to set headers if preferred, or StreamableFile
-    // I will return StreamableFile but set headers via Res is often needed. Let's use standard Headers.
-    return new StreamableFile(stream as any, {
+    const { buffer, filename } = await this.driverService.generateManifestPdf(driverId, parseInt(scheduleId, 10));
+    return new StreamableFile(buffer, {
       type: 'application/pdf',
-      disposition: `attachment; filename="${filename}"`
+      disposition: `attachment; filename="${filename}"`,
     });
   }
 

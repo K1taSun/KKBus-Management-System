@@ -176,61 +176,61 @@ export class DriverService {
     return { message: 'Availability deleted successfully.' };
   }
 
-  async generateManifestPdf(driverId: string, scheduleId: number): Promise<{ stream: NodeJS.ReadableStream, filename: string }> {
+  async generateManifestPdf(driverId: string, scheduleId: number): Promise<{ buffer: Buffer; filename: string }> {
     const manifest = await this.getPassengerManifest(driverId, scheduleId);
 
-    // Dynamic import to avoid module issues if any, though standard import works in TS usually.
     const PdfPrinter = require('pdfmake');
-    
+
     const fonts = {
       Helvetica: {
         normal: 'Helvetica',
         bold: 'Helvetica-Bold',
         italics: 'Helvetica-Oblique',
-        bolditalics: 'Helvetica-BoldOblique'
-      }
+        bolditalics: 'Helvetica-BoldOblique',
+      },
     };
 
     const printer = new PdfPrinter(fonts);
 
     const docDefinition = {
-      defaultStyle: {
-        font: 'Helvetica',
-        fontSize: 12
-      },
+      defaultStyle: { font: 'Helvetica', fontSize: 12 },
       content: [
         { text: `Lista pasażerów - Kurs #${scheduleId}`, style: 'header' },
         {
           table: {
             headerRows: 1,
-            widths: ['auto', '*', 'auto', 'auto'],
+            widths: ['auto', '*', 'auto'],
             body: [
-              ['Nr Miejsca', 'Imię i nazwisko', 'Telefon', 'Status'],
-              ...manifest.passengers.map(row => [
+              // Telefon usunięty — dane osobowe niepotrzebne kierowcy (RODO)
+              ['Nr Miejsca', 'Imię i nazwisko', 'Status'],
+              ...manifest.passengers.map((row: any) => [
                 row.seat_number.toString(),
                 `${row.first_name} ${row.last_name}`,
-                row.phone || '-',
-                row.status
-              ])
-            ]
-          }
-        }
+                row.status,
+              ]),
+            ],
+          },
+        },
       ],
       styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          margin: [0, 0, 0, 10]
-        }
-      }
+        header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
+      },
     };
 
-    const pdfDoc = printer.createPdfKitDocument(docDefinition);
-    pdfDoc.end();
+    // Zbieramy chunki do Buffera — wywołanie .end() po podpięciu konsumenta
+    // eliminuje problem pustego PDF przy użyciu StreamableFile.
+    const buffer = await new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      const pdfDoc = printer.createPdfKitDocument(docDefinition);
+      pdfDoc.on('data', (chunk: Buffer) => chunks.push(chunk));
+      pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
+      pdfDoc.on('error', reject);
+      pdfDoc.end();
+    });
 
     return {
-      stream: pdfDoc,
-      filename: `manifest_kurs_${scheduleId}.pdf`
+      buffer,
+      filename: `manifest_kurs_${scheduleId}.pdf`,
     };
   }
 
