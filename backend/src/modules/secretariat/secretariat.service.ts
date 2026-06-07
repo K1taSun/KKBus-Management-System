@@ -235,21 +235,38 @@ export class SecretariatService {
 
   async getRoutes() {
     return this.dataSource.query(
-      'SELECT id, name, estimated_duration_minutes FROM routes ORDER BY id ASC',
+      'SELECT id, name, total_distance_km as estimated_duration_minutes FROM routes ORDER BY id ASC',
     );
   }
 
   async getBuses() {
-    return this.dataSource.query(
-      'SELECT id, registration_number, capacity, status FROM buses ORDER BY id ASC',
-    );
+    return this.dataSource.query(`
+      SELECT 
+        id, 
+        registration_number as plate_number, 
+        model,
+        capacity,
+        CASE 
+          WHEN status = 'W serwisie' THEN 'W serwisie'
+          WHEN status = 'Złom' THEN 'Złom'
+          WHEN EXISTS (
+            SELECT 1 FROM schedules s 
+            WHERE s.bus_id = buses.id 
+              AND s.departure_time <= NOW() 
+              AND s.arrival_time >= NOW()
+          ) THEN 'W trasie'
+          ELSE 'Dostępny'
+        END as status
+      FROM buses 
+      ORDER BY id ASC
+    `);
   }
 
   async getSchedules() {
     return this.dataSource.query(`
       SELECT s.id, s.departure_time, s.arrival_time, s.price_base,
              r.name as route_name,
-             b.registration_number as bus_registration,
+             b.registration_number as bus_plate,
              u.first_name as driver_first_name, u.last_name as driver_last_name
       FROM schedules s
       JOIN routes r ON s.route_id = r.id
@@ -340,7 +357,7 @@ export class SecretariatService {
 
     // Count available buses
     const busesRes = await this.dataSource.query(
-      `SELECT COUNT(*) FROM buses WHERE status = 'Dostępny' OR status = 'W trasie'`,
+      `SELECT COUNT(*) FROM buses WHERE status = 'Aktywny'`,
     );
 
     // Count clients
@@ -356,19 +373,120 @@ export class SecretariatService {
   }
 
   async updateBusStatus(busId: number, status: string) {
-    const validStatuses = ['Dostępny', 'W trasie', 'W serwisie', 'Złom'];
+    const validStatuses = ['Dostępny', 'W trasie', 'W serwisie', 'Złom', 'Aktywny'];
     if (!validStatuses.includes(status)) {
       throw new BadRequestException(`Nieprawidłowy status: "${status}". Dozwolone wartości: ${validStatuses.join(', ')}.`);
     }
 
+    const dbStatus = (status === 'Dostępny' || status === 'W trasie' || status === 'Aktywny') ? 'Aktywny' : status;
+
     await this.dataSource.query(
       'UPDATE buses SET status = $1 WHERE id = $2',
-      [status, busId],
+      [dbStatus, busId],
     );
     return { message: 'Bus status updated' };
   }
 
   async bookOnBehalfOfClient(clientId: string, dto: BookSeatsDto) {
     return this.reservationsService.bookSeatsOnBehalf(clientId, dto);
+  }
+
+  async createBus(dto: { registrationNumber: string; model: string; capacity: number; status?: string }) {
+    const { registrationNumber, model, capacity, status } = dto;
+    if (!registrationNumber || !model || !capacity) {
+      throw new BadRequestException('Brak wymaganych pól (numer rejestracyjny, model, pojemność).');
+    }
+    if (capacity <= 0) {
+      throw new BadRequestException('Pojemność musi być większa od zera.');
+    }
+
+    const check = await this.dataSource.query(
+      'SELECT id FROM buses WHERE registration_number = $1',
+      [registrationNumber]
+    );
+    if (check.length > 0) {
+      throw new ConflictException('Pojazd o tym numerze rejestracyjnym już istnieje.');
+    }
+
+    const dbStatus = (status === 'Dostępny' || status === 'W trasie' || status === 'Aktywny') ? 'Aktywny' : (status || 'Aktywny');
+
+    const res = await this.dataSource.query(
+      `INSERT INTO buses (registration_number, model, capacity, status)
+       VALUES ($1, $2, $3, $4) RETURNING id`,
+      [registrationNumber, model, capacity, dbStatus]
+    );
+
+    return {
+      message: 'Bus created successfully',
+      busId: res[0].id
+    };
+  }
+
+  async updateBus(id: number, dto: { registrationNumber: string; model: string; capacity: number }) {
+    const { registrationNumber, model, capacity } = dto;
+    if (!registrationNumber || !model || !capacity) {
+      throw new BadRequestException('Brak wymaganych pól.');
+    }
+    if (capacity <= 0) {
+      throw new BadRequestException('Pojemność musi być większa od zera.');
+    }
+
+    const check = await this.dataSource.query(
+      'SELECT id FROM buses WHERE registration_number = $1 AND id != $2',
+      [registrationNumber, id]
+    );
+    if (check.length > 0) {
+      throw new ConflictException('Pojazd o tym numerze rejestracyjnym już istnieje.');
+    }
+
+    const schedules = await this.dataSource.query(
+      'SELECT id FROM schedules WHERE bus_id = $1',
+      [id]
+    );
+    for (const s of schedules) {
+      const reservationsCount = await this.dataSource.query(
+        `SELECT COUNT(*) as count FROM reservations WHERE schedule_id = $1 AND status != 'Anulowana'`,
+        [s.id]
+      );
+      const passengerCount = parseInt(reservationsCount[0].count, 10);
+      if (passengerCount > capacity) {
+        throw new ConflictException(
+          `Nie można zmniejszyć pojemności autobusu do ${capacity}, ponieważ kurs o ID ${s.id} posiada już ${passengerCount} aktywnych rezerwacji.`
+        );
+      }
+    }
+
+    await this.dataSource.query(
+      `UPDATE buses 
+       SET registration_number = $1, model = $2, capacity = $3
+       WHERE id = $4`,
+      [registrationNumber, model, capacity, id]
+    );
+
+    return { message: 'Bus updated successfully' };
+  }
+
+  async deleteBus(id: number) {
+    const scheduleCheck = await this.dataSource.query(
+      'SELECT id FROM schedules WHERE bus_id = $1 LIMIT 1',
+      [id]
+    );
+    if (scheduleCheck.length > 0) {
+      throw new ConflictException('Nie można usunąć pojazdu, ponieważ jest on przypisany do zaplanowanych kursów.');
+    }
+
+    await this.dataSource.query('DELETE FROM buses WHERE id = $1', [id]);
+    return { message: 'Bus deleted successfully' };
+  }
+
+  async getClients() {
+    return this.dataSource.query(`
+      SELECT u.id, u.first_name, u.last_name, u.email, cp.client_number
+      FROM users u
+      JOIN roles r ON u.role_id = r.id
+      LEFT JOIN client_profiles cp ON cp.user_id = u.id
+      WHERE r.name = 'Klient'
+      ORDER BY u.last_name ASC, u.first_name ASC
+    `);
   }
 }

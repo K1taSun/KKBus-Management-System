@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsUUID, IsDateString, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsDateString, Min } from 'class-validator';
 
 export class CreateScheduleDto {
   @IsNotEmpty()
@@ -10,7 +10,7 @@ export class CreateScheduleDto {
   busId: number;
 
   @IsNotEmpty()
-  @IsUUID()
+  @IsString()
   driverId: string;
 
   @IsNotEmpty()

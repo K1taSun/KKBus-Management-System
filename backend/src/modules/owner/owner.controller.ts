@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Put, Body, Param, UseGuards, UseInterceptors, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Put, Body, Param, UseGuards, UseInterceptors, Query, Delete } from '@nestjs/common';
 import { OwnerService } from './owner.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -86,5 +86,25 @@ export class OwnerController {
     @Query('endDate') endDate: string
   ) {
     return this.ownerService.getFuelAndCourseAnalytics(startDate, endDate);
+  }
+
+  @Get('logs')
+  async getSystemLogs() {
+    return this.ownerService.getSystemLogs();
+  }
+
+  @Get('pricing-policies')
+  async getPricingPolicies() {
+    return this.ownerService.getPricingPolicies();
+  }
+
+  @Get('buses')
+  async getBuses() {
+    return this.ownerService.getBuses();
+  }
+
+  @Delete('users/:id')
+  async deleteUser(@Param('id') id: string) {
+    return this.ownerService.deleteUser(id);
   }
 }
