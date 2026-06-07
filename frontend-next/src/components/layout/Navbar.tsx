@@ -3,15 +3,26 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, User, Globe } from "lucide-react";
+import { Menu, X, User, Globe, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { CartButton } from "@/components/cart/CartButton";
+import { useTranslation } from "@/lib/LanguageContext";
+import { apiGet } from "@/lib/api";
+import { useCart } from "@/lib/CartContext";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { t, language, toggleLanguage } = useTranslation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { cartItems, setCartOpen } = useCart();
+
+  useEffect(() => {
+    apiGet("/auth/profile")
+      .then(() => setIsLoggedIn(true))
+      .catch(() => setIsLoggedIn(false));
+  }, [pathname]);
 
   const isHomePage = pathname === "/";
 
@@ -42,21 +53,39 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="#" className="text-white hover:text-action transition-colors text-sm font-medium">Rozkład jazdy</Link>
-          <Link href="#" className="text-white hover:text-action transition-colors text-sm font-medium">Przystanki</Link>
-          <Link href="/cennik" className="text-white hover:text-action transition-colors text-sm font-medium">Cennik</Link>
-          <Link href="/informacje" className="text-white hover:text-action transition-colors text-sm font-medium">Informacje</Link>
+          <Link href="/rozklad-jazdy" className="text-white hover:text-action transition-colors text-sm font-medium">{t("nav.timetable")}</Link>
+          <Link href="/przystanki" className="text-white hover:text-action transition-colors text-sm font-medium">{t("nav.stops")}</Link>
+          <Link href="/cennik" className="text-white hover:text-action transition-colors text-sm font-medium">{t("nav.pricing")}</Link>
+          <Link href="/informacje" className="text-white hover:text-action transition-colors text-sm font-medium">{t("nav.info")}</Link>
         </nav>
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <button className="text-white hover:text-action transition-colors" aria-label="Zmień język">
-            <Globe size={20} />
+          <button 
+            onClick={toggleLanguage} 
+            className="text-white hover:text-action transition-colors flex items-center gap-1.5 font-semibold text-xs uppercase" 
+            aria-label={t("nav.changeLang")}
+            title={t("nav.changeLang")}
+          >
+            <Globe size={18} />
+            <span className="bg-white/10 px-1.5 py-0.5 rounded text-[10px]">{language}</span>
           </button>
-          <button className="text-white hover:text-action transition-colors" aria-label="Zaloguj się">
+          <Link href={isLoggedIn ? "/dashboard" : "/login"} className="text-white hover:text-action transition-colors" aria-label={isLoggedIn ? t("nav.profile") : t("nav.login")} title={isLoggedIn ? t("nav.profile") : t("nav.login")}>
             <User size={20} />
+          </Link>
+          <button
+            onClick={() => setCartOpen(true)}
+            className="text-white hover:text-action transition-colors relative"
+            aria-label={t("nav.cart")}
+            title={t("nav.cart")}
+          >
+            <ShoppingCart size={20} />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-action text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse">
+                {cartItems.length}
+              </span>
+            )}
           </button>
-          <CartButton />
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -76,19 +105,45 @@ export function Navbar() {
           )}
         >
           <nav className="flex flex-col gap-6 text-center">
-            <Link href="#" className="text-2xl font-medium text-white hover:text-action">Rozkład jazdy</Link>
-            <Link href="#" className="text-2xl font-medium text-white hover:text-action">Przystanki</Link>
-            <Link href="/cennik" className="text-2xl font-medium text-white hover:text-action">Cennik</Link>
-            <Link href="/informacje" className="text-2xl font-medium text-white hover:text-action">Informacje</Link>
+            <Link href="/rozklad-jazdy" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-medium text-white hover:text-action">{t("nav.timetable")}</Link>
+            <Link href="/przystanki" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-medium text-white hover:text-action">{t("nav.stops")}</Link>
+            <Link href="/cennik" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-medium text-white hover:text-action">{t("nav.pricing")}</Link>
+            <Link href="/informacje" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-medium text-white hover:text-action">{t("nav.info")}</Link>
+            <button
+              onClick={() => {
+                toggleLanguage();
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center justify-center gap-2 text-white hover:text-action transition-colors py-2 text-2xl font-medium"
+            >
+              <Globe size={24} /> <span className="uppercase">{language === "pl" ? "English" : "Polski"}</span>
+            </button>
           </nav>
           <div className="mt-auto mb-10 flex flex-col gap-4">
-            <Button variant="outline" className="w-full text-white border-white hover:bg-white hover:text-primary justify-center gap-2">
-              <User size={18} /> Zaloguj się
+            <Link href={isLoggedIn ? "/dashboard" : "/login"} onClick={() => setIsMobileMenuOpen(false)} className="w-full">
+              <Button variant="outline" className="w-full text-white border-white hover:bg-white hover:text-primary justify-center gap-2">
+                <User size={18} /> {isLoggedIn ? t("nav.profile") : t("nav.login")}
+              </Button>
+            </Link>
+            <Button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setCartOpen(true);
+              }}
+              variant="default"
+              className="w-full justify-center gap-2 bg-action hover:bg-action-hover text-white relative"
+            >
+              <ShoppingCart size={18} /> {t("nav.myCart")}
+              {cartItems.length > 0 && (
+                <span className="bg-white text-action text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center ml-1">
+                  {cartItems.length}
+                </span>
+              )}
             </Button>
-            <CartButton mobile />
           </div>
         </div>
       </div>
     </header>
   );
 }
+

@@ -4,6 +4,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
+import { PublicInfoModule } from './modules/public-info/public-info.module';
+import { DriverModule } from './modules/driver/driver.module';
+import { SecretariatModule } from './modules/secretariat/secretariat.module';
+import { OwnerModule } from './modules/owner/owner.module';
 
 @Module({
   imports: [
@@ -21,6 +26,11 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
     ReservationsModule,
     SchedulesModule,
     ReportsModule,
+    LoyaltyModule,
+    PublicInfoModule,
+    DriverModule,
+    SecretariatModule,
+    OwnerModule,
   ],
 })
 export class AppModule {}
