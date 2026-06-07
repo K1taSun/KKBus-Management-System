@@ -19,6 +19,14 @@ export class PublicInfoService {
     this.cache.set(key, { data, expiresAt: Date.now() + ttlMs });
   }
 
+  clearTimetableCache() {
+    this.cache.delete('routes_timetable');
+  }
+
+  clearPricingCache() {
+    this.cache.delete('pricing_discounts');
+  }
+
   async getRoutesAndTimetable() {
     const cacheKey = 'routes_timetable';
     const cached = this.getCached(cacheKey);
@@ -46,7 +54,7 @@ export class PublicInfoService {
         WHERE status != 'Anulowana'
         GROUP BY schedule_id
       ) res ON res.schedule_id = s.id
-      WHERE s.departure_time >= NOW()
+      WHERE s.departure_time >= NOW() AND r.is_active = TRUE
       ORDER BY s.departure_time ASC
     `);
 
@@ -60,18 +68,62 @@ export class PublicInfoService {
     const cached = this.getCached(cacheKey);
     if (cached) return cached;
 
+    // Pobranie aktualnej polityki cenowej z bazy danych
+    const policyResult = await this.dataSource.query(
+      `SELECT base_price_multiplier, student_discount_percent, child_discount_percent, loyalty_point_value
+       FROM pricing_policies
+       WHERE is_current = TRUE
+       LIMIT 1`
+    );
+
+    const baseMultiplier = policyResult.length > 0 ? parseFloat(policyResult[0].base_price_multiplier) : 1.0;
+    const studentDiscountPct = policyResult.length > 0 ? parseInt(policyResult[0].student_discount_percent, 10) : 51;
+    const childDiscountPct = policyResult.length > 0 ? parseInt(policyResult[0].child_discount_percent, 10) : 30;
+
+    const basePrice = 25.00 * baseMultiplier;
+
     const data = {
-      basePrice: 25.00,
+      basePrice: parseFloat(basePrice.toFixed(2)),
       currency: 'PLN',
       discounts: [
-        { name: 'Studencka', multiplier: 0.49, valuePct: 51, description: 'Dla studentów do 26 roku życia.' },
-        { name: 'Szkolna', multiplier: 0.63, valuePct: 37, description: 'Dla dzieci i młodzieży szkolnej.' },
-        { name: 'Dziecięca (do lat 4)', multiplier: 0.00, valuePct: 100, description: 'Podróż na kolanach opiekuna.' }
+        { 
+          name: 'Studencka', 
+          multiplier: parseFloat(((100 - studentDiscountPct) / 100).toFixed(2)), 
+          valuePct: studentDiscountPct, 
+          description: 'Dla studentów do 26 roku życia.' 
+        },
+        { 
+          name: 'Szkolna', 
+          multiplier: parseFloat(((100 - childDiscountPct) / 100).toFixed(2)), 
+          valuePct: childDiscountPct, 
+          description: 'Dla dzieci i młodzieży szkolnej.' 
+        },
+        { 
+          name: 'Dziecięca (do lat 4)', 
+          multiplier: 0.00, 
+          valuePct: 100, 
+          description: 'Podróż na kolanach opiekuna.' 
+        }
       ]
     };
 
     // Cache na 1 godzinę (3 600 000 ms)
     this.setCached(cacheKey, data, 3600000);
     return data;
+  }
+
+  async getRecentlyCompletedCourses() {
+    return this.dataSource.query(`
+      SELECT 
+        rr.id,
+        r.name as route_name,
+        rr.submitted_at
+      FROM route_reports rr
+      JOIN schedules s ON rr.schedule_id = s.id
+      JOIN routes r ON s.route_id = r.id
+      WHERE rr.status = 'Zatwierdzony'
+      ORDER BY rr.submitted_at DESC
+      LIMIT 5
+    `);
   }
 }

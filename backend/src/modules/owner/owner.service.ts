@@ -2,10 +2,14 @@ import { Injectable, BadRequestException, ConflictException } from '@nestjs/comm
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto, ChangeUserStatusDto, CreateRouteDto, UpdateRouteDto, OverrideScheduleDto, CreatePricingPolicyDto } from './dto/owner.dto';
+import { PublicInfoService } from '../public-info/public-info.service';
 
 @Injectable()
 export class OwnerService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly publicInfoService: PublicInfoService,
+  ) {}
 
   // ==========================================
   // Domain 1: Global User & Role Management
@@ -121,6 +125,10 @@ export class OwnerService {
       [routeId]
     );
     if (res.length === 0) throw new BadRequestException('Route not found');
+
+    // Inwalidacja cache rozkładu jazdy
+    this.publicInfoService.clearTimetableCache();
+
     return res[0];
   }
 
@@ -130,7 +138,7 @@ export class OwnerService {
 
   async getSchedules(date?: string) {
     let query = `
-      SELECT s.id, s.departure_time, s.arrival_time, s.status,
+      SELECT s.id, s.departure_time, s.arrival_time, 'Aktywny' AS status,
              json_build_object('id', u.id, 'first_name', u.first_name, 'last_name', u.last_name) as driver,
              json_build_object('id', b.id, 'registration_number', b.registration_number) as bus,
              json_build_object('name', r.name) as route
@@ -214,6 +222,9 @@ export class OwnerService {
       [dto.versionName, dto.basePriceMultiplier, dto.studentDiscountPercent, dto.childDiscountPercent, dto.loyaltyPointValue]
     );
 
+    // Inwalidacja cache cen/zniżek
+    this.publicInfoService.clearPricingCache();
+
     return res[0];
   }
 
@@ -222,48 +233,112 @@ export class OwnerService {
   // ==========================================
 
   async getFinancialAnalytics(startDate: string, endDate: string) {
-    // Calculates revenue from completed payments joined with reservations and schedules
-    const query = `
+    let start = startDate;
+    let end = endDate;
+    if (!start) {
+      const d = new Date();
+      d.setDate(d.getDate() - 30);
+      start = d.toISOString().split('T')[0] + ' 00:00:00';
+    }
+    if (!end) {
+      const d = new Date();
+      d.setDate(d.getDate() + 7);
+      end = d.toISOString().split('T')[0] + ' 23:59:59';
+    }
+
+    const summaryQuery = `
       SELECT 
-        DATE(p.created_at) as date,
-        COUNT(p.id) as total_transactions,
-        SUM(p.amount) as total_revenue
+        COALESCE(SUM(p.amount), 0) as total_revenue,
+        COUNT(DISTINCT r.id) as total_tickets
       FROM payments p
       JOIN reservations r ON p.reservation_id = r.id
       JOIN schedules s ON r.schedule_id = s.id
       WHERE p.status = 'Zakończona'
         AND s.departure_time >= $1::timestamp 
         AND s.departure_time <= $2::timestamp
-      GROUP BY DATE(p.created_at)
-      ORDER BY DATE(p.created_at) ASC
     `;
-    const res = await this.dataSource.query(query, [startDate, endDate]);
-    
-    const summary = await this.dataSource.query(`
-      SELECT SUM(p.amount) as total 
-      FROM payments p 
+    const summaryRes = await this.dataSource.query(summaryQuery, [start, end]);
+    const totalRevenue = Number(summaryRes[0]?.total_revenue || 0);
+    const totalTickets = Number(summaryRes[0]?.total_tickets || 0);
+
+    const reservationsQuery = `
+      SELECT COUNT(r.id) as total_reservations
+      FROM reservations r
+      JOIN schedules s ON r.schedule_id = s.id
+      WHERE r.status != 'Anulowana'
+        AND s.departure_time >= $1::timestamp 
+        AND s.departure_time <= $2::timestamp
+    `;
+    const reservationsRes = await this.dataSource.query(reservationsQuery, [start, end]);
+    const totalReservations = Number(reservationsRes[0]?.total_reservations || 0);
+
+    const routeRevenueQuery = `
+      SELECT 
+        ro.name as route_name,
+        COALESCE(SUM(p.amount), 0) as revenue
+      FROM routes ro
+      JOIN schedules s ON s.route_id = ro.id
+      JOIN reservations r ON r.schedule_id = s.id
+      JOIN payments p ON p.reservation_id = r.id
+      WHERE p.status = 'Zakończona'
+        AND s.departure_time >= $1::timestamp 
+        AND s.departure_time <= $2::timestamp
+      GROUP BY ro.id, ro.name
+      ORDER BY revenue DESC
+    `;
+    const routeRevenueRes = await this.dataSource.query(routeRevenueQuery, [start, end]);
+    const revenueByRoute = routeRevenueRes.map((row: any) => ({
+      routeName: row.route_name,
+      revenue: Number(row.revenue)
+    }));
+
+    const dateRevenueQuery = `
+      SELECT 
+        TO_CHAR(p.created_at, 'YYYY-MM-DD') as date,
+        COALESCE(SUM(p.amount), 0) as revenue
+      FROM payments p
       JOIN reservations r ON p.reservation_id = r.id
       JOIN schedules s ON r.schedule_id = s.id
-      WHERE p.status = 'Zakończona' 
-      AND s.departure_time >= $1::timestamp 
-      AND s.departure_time <= $2::timestamp
-    `, [startDate, endDate]);
+      WHERE p.status = 'Zakończona'
+        AND s.departure_time >= $1::timestamp 
+        AND s.departure_time <= $2::timestamp
+      GROUP BY TO_CHAR(p.created_at, 'YYYY-MM-DD')
+      ORDER BY date ASC
+    `;
+    const dateRevenueRes = await this.dataSource.query(dateRevenueQuery, [start, end]);
+    const revenueByDate = dateRevenueRes.map((row: any) => ({
+      date: row.date,
+      revenue: Number(row.revenue)
+    }));
 
     return {
-      totalRevenue: summary[0].total || 0,
-      dailyBreakdown: res
+      totalRevenue,
+      totalTickets,
+      totalReservations,
+      revenueByRoute,
+      revenueByDate
     };
   }
 
   async getFuelAndCourseAnalytics(startDate: string, endDate: string) {
+    let start = startDate;
+    let end = endDate;
+    if (!start) {
+      const d = new Date();
+      d.setDate(d.getDate() - 30);
+      start = d.toISOString().split('T')[0] + ' 00:00:00';
+    }
+    if (!end) {
+      const d = new Date();
+      d.setDate(d.getDate() + 7);
+      end = d.toISOString().split('T')[0] + ' 23:59:59';
+    }
+
     const query = `
       SELECT 
         r.name as route_name,
-        COUNT(rr.id) as completed_courses,
-        SUM(rr.actual_passengers) as total_passengers,
-        SUM(rr.fuel_liters) as total_fuel_liters,
-        SUM(rr.fuel_cost) as total_fuel_cost,
-        AVG(rr.average_fuel_consumption) as avg_consumption
+        COALESCE(SUM(rr.distance_km), 0) as total_distance,
+        COALESCE(SUM(rr.fuel_liters), 0) as total_fuel
       FROM route_reports rr
       JOIN schedules s ON rr.schedule_id = s.id
       JOIN routes r ON s.route_id = r.id
@@ -272,7 +347,69 @@ export class OwnerService {
         AND s.departure_time <= $2::timestamp
       GROUP BY r.id, r.name
     `;
-    const res = await this.dataSource.query(query, [startDate, endDate]);
-    return res;
+    const rows = await this.dataSource.query(query, [start, end]);
+
+    let totalDistance = 0;
+    let totalFuelUsed = 0;
+    const efficiencyByRoute = rows.map((row: any) => {
+      const dist = Number(row.total_distance);
+      const fuel = Number(row.total_fuel);
+      totalDistance += dist;
+      totalFuelUsed += fuel;
+      const consumption = dist > 0 ? (fuel / dist) * 100 : 0;
+      return {
+        routeName: row.route_name,
+        totalDistance: dist,
+        totalFuel: fuel,
+        consumptionPer100km: Number(consumption.toFixed(2))
+      };
+    });
+
+    const avgFuelConsumption = totalDistance > 0 ? (totalFuelUsed / totalDistance) * 100 : 0;
+
+    return {
+      totalDistance,
+      totalFuelUsed,
+      avgFuelConsumption: Number(avgFuelConsumption.toFixed(2)),
+      efficiencyByRoute
+    };
+  }
+
+  async getSystemLogs() {
+    return this.dataSource.query(`
+      SELECT 
+        l.id,
+        l.action_type,
+        l.target_entity,
+        l.payload,
+        l.created_at,
+        u.email as user_email,
+        u.first_name || ' ' || u.last_name as user_name
+      FROM system_logs l
+      LEFT JOIN users u ON l.user_id = u.id
+      ORDER BY l.created_at DESC
+      LIMIT 100
+    `);
+  }
+
+  async getPricingPolicies() {
+    return this.dataSource.query('SELECT * FROM pricing_policies ORDER BY created_at DESC');
+  }
+
+  async getBuses() {
+    return this.dataSource.query('SELECT * FROM buses ORDER BY registration_number');
+  }
+
+  async deleteUser(userId: string) {
+    const scheduleCheck = await this.dataSource.query(
+      'SELECT id FROM schedules WHERE driver_id = $1 LIMIT 1',
+      [userId]
+    );
+    if (scheduleCheck.length > 0) {
+      throw new ConflictException('Nie można usunąć użytkownika, ponieważ jest przypisany do zaplanowanych kursów jako kierowca.');
+    }
+
+    await this.dataSource.query('DELETE FROM users WHERE id = $1', [userId]);
+    return { message: 'Użytkownik został usunięty.' };
   }
 }

@@ -5,5 +5,6 @@ import { PublicInfoService } from './public-info.service';
 @Module({
   controllers: [PublicInfoController],
   providers: [PublicInfoService],
+  exports: [PublicInfoService],
 })
 export class PublicInfoModule {}

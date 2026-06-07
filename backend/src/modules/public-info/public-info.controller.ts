@@ -17,4 +17,10 @@ export class PublicInfoController {
   async getPricing() {
     return this.publicInfoService.getPricingAndDiscounts();
   }
+
+  @Public()
+  @Get('completed-courses')
+  async getCompletedCourses() {
+    return this.publicInfoService.getRecentlyCompletedCourses();
+  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Patch, Param, Get, Res, StreamableFile, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Patch, Param, Get, Res, StreamableFile, Query, Put, Delete } from '@nestjs/common';
 import { Response } from 'express';
 import { SecretariatService } from './secretariat.service';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -8,6 +8,8 @@ import { GenerateReportDto } from './dto/generate-report.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+
+import { BookSeatsDto } from '../reservations/dto/book-seats.dto';
 
 @Controller('secretariat')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -71,5 +73,33 @@ export class SecretariatController {
   @Patch('buses/:id/status')
   updateBusStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.secretariatService.updateBusStatus(+id, status);
+  }
+
+  @Post('buses')
+  createBus(@Body() dto: { registrationNumber: string; model: string; capacity: number; status?: string }) {
+    return this.secretariatService.createBus(dto);
+  }
+
+  @Put('buses/:id')
+  updateBus(
+    @Param('id') id: string,
+    @Body() dto: { registrationNumber: string; model: string; capacity: number }
+  ) {
+    return this.secretariatService.updateBus(+id, dto);
+  }
+
+  @Delete('buses/:id')
+  deleteBus(@Param('id') id: string) {
+    return this.secretariatService.deleteBus(+id);
+  }
+
+  @Get('clients')
+  getClients() {
+    return this.secretariatService.getClients();
+  }
+
+  @Post('reservations/behalf/:clientId')
+  bookOnBehalfOfClient(@Param('clientId') clientId: string, @Body() dto: BookSeatsDto) {
+    return this.secretariatService.bookOnBehalfOfClient(clientId, dto);
   }
 }

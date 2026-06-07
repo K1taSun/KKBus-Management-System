@@ -76,7 +76,7 @@ export class UpdateRouteDto {
 }
 
 export class OverrideScheduleDto {
-  @IsUUID()
+  @IsString()
   @IsOptional()
   driverId?: string;
 

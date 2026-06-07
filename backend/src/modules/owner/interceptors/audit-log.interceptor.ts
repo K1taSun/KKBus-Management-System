@@ -21,7 +21,7 @@ export class AuditLogInterceptor implements NestInterceptor {
             await this.dataSource.query(
               `INSERT INTO system_logs (user_id, action_type, target_entity, payload)
                VALUES ($1, $2, $3, $4)`,
-              [user.sub, method, url, JSON.stringify(body)]
+              [user.userId || user.sub, method, url, JSON.stringify(body)]
             );
           } catch (error) {
             console.error('AuditLogInterceptor failed to save log:', error);

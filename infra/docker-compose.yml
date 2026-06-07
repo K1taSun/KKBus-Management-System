@@ -26,6 +26,7 @@ services:
       - DB_USER=${DB_USER:-kkbus_user}
       - DB_PASSWORD=${DB_PASSWORD:-kkbus_pass}
       - DB_NAME=${DB_NAME:-kkbus_db}
+      - JWT_SECRET=${JWT_SECRET:-zmien-mnie-na-bezpieczny-klucz}
     ports:
       - "3000:3000"
     depends_on:

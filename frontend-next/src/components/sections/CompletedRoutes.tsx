@@ -19,44 +19,57 @@ interface CompletedRoute {
   time: string;
 }
 
+const BACKEND_URL = "http://localhost:3000/api";
+
 export function CompletedRoutes() {
   const [routes, setRoutes] = useState<CompletedRoute[]>([]);
   const { t } = useTranslation();
 
-  // Inicjalizacja początkowych danych
+  // Pobieranie danych z API z pollingiem co 5 sekund
   useEffect(() => {
-    const initialRoutes = Array.from({ length: 4 }).map((_, i) => {
-      const route = sampleRoutes[Math.floor(Math.random() * sampleRoutes.length)];
-      const date = new Date();
-      date.setMinutes(date.getMinutes() - (i * 15 + 2)); // Cofamy czas
-      return {
-        id: `initial-${i}`,
-        from: route.from,
-        to: route.to,
-        time: date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
-      };
-    });
-    setRoutes(initialRoutes);
-  }, []);
+    const fetchCompletedRoutes = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/public-info/completed-courses`);
+        if (!res.ok) throw new Error("Network response was not ok");
+        const data = await res.json();
+        
+        const parsed = data.map((row: any) => {
+          const parts = row.route_name.split('–');
+          const from = parts[0]?.trim() || 'Kraków';
+          const to = parts[1]?.replace(/\(.*\)/, '')?.trim() || 'Katowice';
+          const date = new Date(row.submitted_at);
+          return {
+            id: String(row.id),
+            from,
+            to,
+            time: date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
+          };
+        });
 
-  // Symulacja "Live Feed" - dodawanie nowego połączenia co kilka sekund
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const route = sampleRoutes[Math.floor(Math.random() * sampleRoutes.length)];
-      const newRoute: CompletedRoute = {
-        id: `route-${Date.now()}`,
-        from: route.from,
-        to: route.to,
-        time: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
-      };
+        if (parsed.length === 0) {
+          // Dane próbne jeśli baza jest pusta
+          const initialRoutes = Array.from({ length: 4 }).map((_, i) => {
+            const route = sampleRoutes[Math.floor(Math.random() * sampleRoutes.length)];
+            const date = new Date();
+            date.setMinutes(date.getMinutes() - (i * 15 + 2)); // Cofamy czas
+            return {
+              id: `initial-${i}`,
+              from: route.from,
+              to: route.to,
+              time: date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
+            };
+          });
+          setRoutes(initialRoutes);
+        } else {
+          setRoutes(parsed);
+        }
+      } catch (err) {
+        console.error("Błąd podczas pobierania zrealizowanych kursów:", err);
+      }
+    };
 
-      setRoutes((prev) => {
-        // Trzymamy tylko 5 ostatnich na liście, aby okno nie rosło w nieskończoność
-        const updated = [newRoute, ...prev];
-        if (updated.length > 5) updated.pop();
-        return updated;
-      });
-    }, 5000); // Co 5 sekund wpada nowe zrealizowane połączenie
+    fetchCompletedRoutes();
+    const interval = setInterval(fetchCompletedRoutes, 5000);
 
     return () => clearInterval(interval);
   }, []);
