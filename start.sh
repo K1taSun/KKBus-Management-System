@@ -26,7 +26,7 @@ fi
 
 echo -e "Wybierz tryb uruchomienia projektu:"
 echo -e "  [1] ${GREEN}Tryb Docker-Only${NC} (Wszystko w kontenerach: baza, backend, frontend)"
-echo -e "  [2] ${YELLOW}Tryb Hybrydowy (Zalecany do developmentu)${NC} (Baza i pgAdmin w Dockerze, backend i frontend lokalnie)"
+echo -e "  [2] ${YELLOW}Tryb Hybrydowy (Zalecany do developmentu)${NC} (Baza w Dockerze, backend i frontend lokalnie)"
 echo -e "  [3] ${RED}Zatrzymaj kontenery${NC} (docker-compose down)"
 echo
 
@@ -42,8 +42,8 @@ elif [ "$choice" == "2" ]; then
     echo -e "\n${BLUE}Uruchamianie projektu w trybie Hybrydowym...${NC}"
     
     # 1. Uruchomienie bazy danych w Dockerze
-    echo -e "${CYAN}1. Uruchamianie bazy danych PostgreSQL i pgAdmin w kontenerach...${NC}"
-    docker-compose -f infra/docker-compose.yml up -d db pgadmin
+    echo -e "${CYAN}1. Uruchamianie bazy danych PostgreSQL w kontenerze...${NC}"
+    docker-compose -f infra/docker-compose.yml up -d db
     
     # Odczekanie na gotowość bazy
     echo -e "${YELLOW}Czekanie na zainicjalizowanie bazy danych...${NC}"
@@ -62,13 +62,17 @@ elif [ "$choice" == "2" ]; then
     echo -e "${CYAN}5. Uruchamianie Modułu Sekretariatu (Frontend na porcie 1010) w nowym oknie Terminala...${NC}"
     osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-secretariat' && npm install && npm run dev\""
 
+    echo -e "${CYAN}6. Uruchamianie Modułu Właściciela (Frontend na porcie 5050) w nowym oknie Terminala...${NC}"
+    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-owner' && npm install && npm run dev\""
+
     echo -e "\n${GREEN}Sukces! Baza danych działa w tle. Backend i frontendy zostały uruchomione w osobnych oknach Terminala.${NC}"
     echo -e "Linki do serwisów:"
     echo -e "  - Frontend (Klient):    ${CYAN}http://localhost:3001${NC}"
     echo -e "  - Frontend (Kierowca):  ${CYAN}http://localhost:4040${NC}"
     echo -e "  - Frontend (Sekretariat): ${CYAN}http://localhost:1010${NC}"
+    echo -e "  - Frontend (Właściciel):  ${CYAN}http://localhost:5050${NC}"
     echo -e "  - Backend API:          ${CYAN}http://localhost:3000/api${NC}"
-    echo -e "  - pgAdmin:    ${CYAN}http://localhost:5050${NC}"
+
     echo
     echo
 elif [ "$choice" == "3" ]; then

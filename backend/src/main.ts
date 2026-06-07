@@ -17,7 +17,7 @@ async function bootstrap() {
   
   // Włączamy CORS dla żądań z frontendu
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:4040', 'http://localhost:1010', 'http://localhost', 'http://127.0.0.1:1010', 'http://127.0.0.1:3001', 'http://127.0.0.1:4040'],
+    origin: ['http://localhost:3001', 'http://localhost:4040', 'http://localhost:1010', 'http://localhost', 'http://localhost:5050', 'http://127.0.0.1:1010', 'http://127.0.0.1:3001', 'http://127.0.0.1:4040', 'http://127.0.0.1:5050'],
     credentials: true,
   });
   

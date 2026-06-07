@@ -8,6 +8,7 @@ import { LoyaltyModule } from './modules/loyalty/loyalty.module';
 import { PublicInfoModule } from './modules/public-info/public-info.module';
 import { DriverModule } from './modules/driver/driver.module';
 import { SecretariatModule } from './modules/secretariat/secretariat.module';
+import { OwnerModule } from './modules/owner/owner.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SecretariatModule } from './modules/secretariat/secretariat.module';
     PublicInfoModule,
     DriverModule,
     SecretariatModule,
+    OwnerModule,
   ],
 })
 export class AppModule {}
