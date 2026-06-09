@@ -11,13 +11,13 @@ export default function RoutesPage() {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Edit / Create State
+  // Stan formularza do edycji / tworzenia
   const [editingRoute, setEditingRoute] = useState<Route | Partial<Route> | null>(null);
 
   const fetchRoutes = async () => {
     try {
       const res = await api.get('/owner/routes');
-      // Normalize stops depending on old format vs new format
+      // Normalizuj strukturę przystanków między starym i nowym formatem
       const normalizedRoutes = res.data.map((r: any) => ({
         ...r,
         stops: Array.isArray(r.stops) 
@@ -57,17 +57,20 @@ export default function RoutesPage() {
 
     const payload = {
       name: editingRoute.name,
-      totalDistanceKm: editingRoute.total_distance_km || 100, // Default distance if empty
+      label: editingRoute.label,
+      description: editingRoute.description,
+      color: editingRoute.color,
+      totalDistanceKm: editingRoute.total_distance_km || 100, // Domyślny dystans, jeśli brak
       stops: editingRoute.stops,
     };
 
     try {
       if ('id' in editingRoute && editingRoute.id) {
-        // Update existing
+        // Aktualizacja istniejącej trasy
         await api.put(`/owner/routes/${editingRoute.id}`, payload);
         toast.success('Trasa zaktualizowana');
       } else {
-        // Create new
+        // Utworzenie nowej trasy
         await api.post('/owner/routes', payload);
         toast.success('Nowa trasa została utworzona');
       }
@@ -133,14 +136,54 @@ export default function RoutesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Całkowity dystans (km)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Etykieta pod tytułem (opcjonalnie)</label>
               <input
-                type="number"
-                min="1"
+                type="text"
                 className="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500"
-                value={editingRoute.total_distance_km || ''}
-                onChange={(e) => setEditingRoute({ ...editingRoute, total_distance_km: parseInt(e.target.value) || 0 })}
+                value={editingRoute.label || ''}
+                onChange={(e) => setEditingRoute({ ...editingRoute, label: e.target.value })}
+                placeholder="np. Korytarz Autobusowy"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Opis (opcjonalnie)</label>
+              <textarea
+                className="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                value={editingRoute.description || ''}
+                onChange={(e) => setEditingRoute({ ...editingRoute, description: e.target.value })}
+                placeholder="Krótki opis trasy..."
+                rows={2}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Kolor trasy (Hex)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    className="h-10 w-10 p-1 rounded border-slate-300"
+                    value={editingRoute.color || '#0EA5E9'}
+                    onChange={(e) => setEditingRoute({ ...editingRoute, color: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="flex-1 rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 uppercase"
+                    value={editingRoute.color || '#0EA5E9'}
+                    onChange={(e) => setEditingRoute({ ...editingRoute, color: e.target.value })}
+                    placeholder="#0EA5E9"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Całkowity dystans (km)</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="w-full rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                  value={editingRoute.total_distance_km || ''}
+                  onChange={(e) => setEditingRoute({ ...editingRoute, total_distance_km: parseInt(e.target.value) || 0 })}
+                />
+              </div>
             </div>
 
             <div>
@@ -206,7 +249,11 @@ export default function RoutesPage() {
           <div key={route.id} className={`bg-white p-6 rounded-xl border shadow-sm flex flex-col ${route.is_active ? 'border-slate-200' : 'border-red-200 opacity-75'}`}>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">{route.name}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: route.color || '#0EA5E9' }} />
+                  <h3 className="text-lg font-bold text-slate-900">{route.name}</h3>
+                </div>
+                <p className="text-xs text-slate-400 mb-1">{route.label || 'Korytarz Autobusowy'}</p>
                 <p className="text-sm text-slate-500">Dystans: {route.total_distance_km} km</p>
               </div>
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${route.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

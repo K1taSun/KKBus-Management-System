@@ -5,6 +5,9 @@ import { AppShell } from '@/components/AppShell';
 export const metadata: Metadata = {
   title: 'KKBus Owner',
   description: 'Owner management panel for KKBus',
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

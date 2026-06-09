@@ -48,6 +48,18 @@ export class CreateRouteDto {
   @IsNotEmpty()
   name: string;
 
+  @IsString()
+  @IsOptional()
+  label?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
+  color?: string;
+
   @IsInt()
   @Min(1)
   totalDistanceKm: number;
@@ -62,6 +74,18 @@ export class UpdateRouteDto {
   @IsString()
   @IsOptional()
   name?: string;
+
+  @IsString()
+  @IsOptional()
+  label?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
+  color?: string;
 
   @IsInt()
   @Min(1)

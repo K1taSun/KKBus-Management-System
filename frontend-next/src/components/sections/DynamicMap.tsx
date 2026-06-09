@@ -4,7 +4,23 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { routes, Route } from "@/lib/routesData";
+import { apiGet } from "@/lib/api";
+
+export interface Stop {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+export interface Route {
+  id: string;
+  name: string;
+  label: string;
+  description: string;
+  color: string;
+  stops: Stop[];
+}
 import { useTranslation } from "@/lib/LanguageContext";
 
 
@@ -60,32 +76,34 @@ const createLabelIcon = (name: string, routeColor: string) => {
   });
 };
 
-/* ─── Map controller to fit bounds ─── */
+/* ─── Kontroler mapy do dopasowywania granic ─── */
 
-function FitBounds({ route }: { route: Route | null }) {
+function FitBounds({ route, routes }: { route: Route | null, routes: Route[] }) {
   const map = useMap();
 
   useEffect(() => {
     if (!route) {
-      // Fit to all routes
+      if (!routes || routes.length === 0) return;
+      // Dopasuj widok do wszystkich tras
       const allCoords = routes.flatMap((r) =>
-        r.stops.map((s) => [s.lat, s.lng] as [number, number])
+        (r.stops || []).map((s) => [s.lat, s.lng] as [number, number])
       );
       if (allCoords.length > 0) {
         map.fitBounds(L.latLngBounds(allCoords), { padding: [40, 40] });
       }
     } else {
+      if (!route.stops || route.stops.length === 0) return;
       const coords = route.stops.map((s) => [s.lat, s.lng] as [number, number]);
       if (coords.length > 0) {
         map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
       }
     }
-  }, [route, map]);
+  }, [route, map, routes]);
 
   return null;
 }
 
-/* ─── Stop List Panel ─── */
+/* ─── Panel z listą przystanków ─── */
 
 function StopList({ route }: { route: Route }) {
   return (
@@ -95,7 +113,7 @@ function StopList({ route }: { route: Route }) {
         const isLast = idx === route.stops.length - 1;
         return (
           <div key={stop.id} className="flex items-stretch gap-3">
-            {/* Timeline */}
+            {/* Oś czasu */}
             <div className="flex flex-col items-center w-5 shrink-0">
               <div
                 className="shrink-0 rounded-full border-2"
@@ -113,7 +131,7 @@ function StopList({ route }: { route: Route }) {
                 />
               )}
             </div>
-            {/* Stop Name */}
+            {/* Nazwa przystanku */}
             <div
               className={`pb-3 text-sm ${isFirst || isLast
                   ? "font-bold text-primary"
@@ -129,33 +147,59 @@ function StopList({ route }: { route: Route }) {
   );
 }
 
-/* ─── Main Component ─── */
+/* ─── Główny komponent ─── */
 
 export default function DynamicMap() {
   const [isMounted, setIsMounted] = useState(false);
+  const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [hoveredStop, setHoveredStop] = useState<string | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
     setIsMounted(true);
+    
+    // Pobierz trasy dynamicznie z API
+    const loadRoutes = async () => {
+      try {
+        const fetchedRoutes = await apiGet<Route[]>("/public-info/routes");
+        
+        // Upewnij się, że obiekt przystanku ma właściwość 'id' aby nie zepsuć istniejących kluczy
+        const normalized = fetchedRoutes.map(route => ({
+          ...route,
+          color: route.color || '#0EA5E9',
+          label: route.label || 'Korytarz Autobusowy',
+          stops: Array.isArray(route.stops) ? route.stops.map((s: any, idx) => ({
+            id: `stop-${idx}`,
+            name: s.name,
+            lat: s.lat || 0,
+            lng: s.lng || 0,
+          })) : []
+        }));
+
+        setRoutes(normalized);
+      } catch (e) {
+        console.error("Failed to fetch routes", e);
+      }
+    };
+    loadRoutes();
+
     return () => {
       const container = L.DomUtil.get("leaflet-map");
       if (container) {
-        // @ts-ignore
-        container._leaflet_id = null;
+        (container as any)._leaflet_id = null;
       }
     };
   }, []);
 
   const activeRoute = useMemo(
     () => routes.find((r) => r.id === selectedRoute) || null,
-    [selectedRoute]
+    [selectedRoute, routes]
   );
 
   const visibleRoutes = useMemo(
     () => (activeRoute ? [activeRoute] : routes),
-    [activeRoute]
+    [activeRoute, routes]
   );
 
   const center: [number, number] = [50.1648, 19.4844];
@@ -168,9 +212,9 @@ export default function DynamicMap() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-0 h-full">
-      {/* ─── Sidebar ─── */}
+      {/* ─── Pasek boczny ─── */}
       <div className="lg:w-[320px] shrink-0 bg-white border-r border-gray-100 flex flex-col overflow-hidden">
-        {/* Route Selector Tabs */}
+        {/* Zakładki wyboru trasy */}
         <div className="p-3 border-b border-gray-100 space-y-1.5">
           <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
             {t("map.choose")}
@@ -226,7 +270,7 @@ export default function DynamicMap() {
           })}
         </div>
 
-        {/* Stop list when route is selected */}
+        {/* Lista przystanków po wybraniu trasy */}
         {activeRoute && (
           <div className="flex-1 overflow-y-auto p-4">
             <div className="flex items-center gap-2 mb-4">
@@ -268,7 +312,7 @@ export default function DynamicMap() {
         )}
       </div>
 
-      {/* ─── Map ─── */}
+      {/* ─── Mapa ─── */}
       <div
         id="leaflet-map"
         className="flex-1 relative"
@@ -286,9 +330,9 @@ export default function DynamicMap() {
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           />
 
-          <FitBounds route={activeRoute} />
+          <FitBounds route={activeRoute} routes={routes} />
 
-          {/* Polylines */}
+          {/* Linie tras (Polyline) */}
           {visibleRoutes.map((route) => {
             const coords = route.stops.map(
               (s) => [s.lat, s.lng] as [number, number]
@@ -312,7 +356,7 @@ export default function DynamicMap() {
             );
           })}
 
-          {/* Stop Markers */}
+          {/* Znaczniki przystanków */}
           {visibleRoutes.map((route) =>
             route.stops.map((stop, idx) => {
               const isTerminal =
@@ -350,7 +394,7 @@ export default function DynamicMap() {
             })
           )}
 
-          {/* Terminal Labels (only when zoomed into a single route) */}
+          {/* Etykiety krańcowe (tylko przy przybliżeniu na pojedynczą trasę) */}
           {activeRoute &&
             [activeRoute.stops[0], activeRoute.stops[activeRoute.stops.length - 1]].map(
               (stop) => (
@@ -364,7 +408,7 @@ export default function DynamicMap() {
             )}
         </MapContainer>
 
-        {/* Map legend overlay */}
+        {/* Nakładka legendy mapy */}
         {!selectedRoute && (
           <div className="absolute bottom-4 right-4 z-[1000] bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-3">
             <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">

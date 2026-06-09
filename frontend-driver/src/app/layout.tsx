@@ -36,6 +36,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <title>Panel Kierowcy - KKBus</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+        <link rel="icon" href="/icon.png" />
       </head>
       <body className="antialiased bg-gray-50 text-gray-900 flex flex-col min-h-screen">
         <LanguageProvider>

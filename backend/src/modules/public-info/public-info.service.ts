@@ -21,10 +21,37 @@ export class PublicInfoService {
 
   clearTimetableCache() {
     this.cache.delete('routes_timetable');
+    this.cache.delete('routes_only');
   }
 
   clearPricingCache() {
     this.cache.delete('pricing_discounts');
+  }
+
+  async getRoutes() {
+    const cacheKey = 'routes_only';
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
+    const data = await this.dataSource.query(`
+      SELECT id, name, label, description, color, stops
+      FROM routes
+      WHERE is_active = TRUE
+      ORDER BY id ASC
+    `);
+
+    // Musimy przeparsować typ jsonb, by dostosować go do interfejsu klienta i zmapować na poprawne obiekty
+    const mapped = data.map((r: any) => ({
+      id: `route-${r.id}`,
+      name: r.name,
+      label: r.label,
+      description: r.description,
+      color: r.color,
+      stops: r.stops, // jsonb jest automatycznie parsowany przez sterownik pg, ale upewnijmy się, że to tablica
+    }));
+
+    this.setCached(cacheKey, mapped, 300000);
+    return mapped;
   }
 
   async getRoutesAndTimetable() {

@@ -9,6 +9,9 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 export const metadata: Metadata = {
   title: "KKBus",
   description: "Zarezerwuj bilet na podróż z KKBus.",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

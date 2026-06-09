@@ -13,6 +13,12 @@ export class PublicInfoController {
   }
 
   @Public()
+  @Get('routes')
+  async getRoutes() {
+    return this.publicInfoService.getRoutes();
+  }
+
+  @Public()
   @Get('pricing')
   async getPricing() {
     return this.publicInfoService.getPricingAndDiscounts();

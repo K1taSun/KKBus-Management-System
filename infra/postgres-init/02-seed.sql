@@ -11,11 +11,11 @@ INSERT INTO buses (registration_number, model, capacity, status) VALUES
   ('KR 99999', 'MAN Lion''s Coach',   48, 'W serwisie');
 
 -- Trasy
-INSERT INTO routes (name, total_distance_km, stops) VALUES
-  ('Kraków – Katowice (Zwykła)',  79, '["Kraków MDA", "Rondo Ofiar Katynia", "Chrzanów", "Jaworzno", "Katowice Sądowa"]'),
-  ('Katowice – Kraków (Zwykła)',  79, '["Katowice Sądowa", "Jaworzno", "Chrzanów", "Rondo Ofiar Katynia", "Kraków MDA"]'),
-  ('Kraków – Katowice (Ekspres)', 74, '["Kraków MDA", "Katowice Sądowa"]'),
-  ('Katowice – Kraków (Ekspres)', 74, '["Katowice Sądowa", "Kraków MDA"]');
+INSERT INTO routes (name, total_distance_km, stops, color) VALUES
+  ('Kraków – Katowice (Zwykła)',  79, '["Kraków MDA", "Rondo Ofiar Katynia", "Chrzanów", "Jaworzno", "Katowice Sądowa"]', '#E63946'),
+  ('Katowice – Kraków (Zwykła)',  79, '["Katowice Sądowa", "Jaworzno", "Chrzanów", "Rondo Ofiar Katynia", "Kraków MDA"]', '#0EA5E9'),
+  ('Kraków – Katowice (Ekspres)', 74, '["Kraków MDA", "Katowice Sądowa"]', '#2DC653'),
+  ('Katowice – Kraków (Ekspres)', 74, '["Katowice Sądowa", "Kraków MDA"]', '#F77F00');
 
 -- Użytkownicy testowi (hasła = bcrypt("Test1234!") dla wszystkich)
 -- UWAGA: W środowisku produkcyjnym używać wyłącznie zahashowanych haseł generowanych aplikacyjnie.

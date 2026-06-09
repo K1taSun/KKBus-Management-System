@@ -10,12 +10,12 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
+    const status = error.response?.status;
+    if ((status === 401 || status === 403) && typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      window.location.href = '/login';
+      return new Promise(() => {}); // Prevent further execution while redirecting
     }
-    return Promise.reject(error.response?.data || error.message);
+    return Promise.reject(error.response?.data || error);
   }
 );
 

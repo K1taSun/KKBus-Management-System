@@ -37,8 +37,12 @@ CREATE TABLE buses (
 CREATE TABLE routes (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
+    label VARCHAR(150) DEFAULT 'Korytarz Autobusowy',
+    description TEXT DEFAULT 'Nowa trasa w systemie',
+    color VARCHAR(20) DEFAULT '#0EA5E9',
     total_distance_km INT NOT NULL CHECK (total_distance_km > 0),
-    stops JSONB DEFAULT '[]'::jsonb
+    stops JSONB DEFAULT '[]',
+    is_active BOOLEAN DEFAULT TRUE
 );
 
 -- Rozkład (Kursy)

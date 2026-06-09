@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { apiGet, apiPost } from "@/lib/api";
-import { Users, Bus, Calendar, Loader2, PhoneCall, Check, UserCheck, ShieldAlert } from "lucide-react";
+import { Users, Bus, Calendar, Loader2, PhoneCall, Check, UserCheck, ShieldAlert, LogOut } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 
@@ -30,8 +30,12 @@ export default function DashboardPage() {
       setMetrics(mRes);
       setClients(cRes);
       setSchedules(sRes);
-    } catch (err) {
-      console.error("Błąd ładowania danych dashboardu", err);
+    } catch (err: any) {
+      if (err?.message === "Network Error" || err?.name === "CanceledError") {
+        console.warn("Przerwano żądanie sieciowe (np. wylogowanie) lub brak połączenia.");
+      } else {
+        console.error("Błąd ładowania danych dashboardu", err);
+      }
     } finally {
       setLoading(false);
     }
@@ -76,7 +80,7 @@ export default function DashboardPage() {
     try {
       await apiPost(`/secretariat/reservations/behalf/${selectedClientId}`, {
         scheduleId: Number(selectedScheduleId),
-        seatNumber: selectedSeat,
+        seatNumbers: [selectedSeat],
       });
 
       toast.success("Rezerwacja telefoniczna została pomyślnie utworzona i opłacona!");
@@ -92,6 +96,16 @@ export default function DashboardPage() {
       toast.error(err.message || "Błąd podczas tworzenia rezerwacji.");
     } finally {
       setBookingLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await apiPost("/auth/logout");
+      toast.success("Wylogowano pomyślnie.");
+      window.location.href = "/login";
+    } catch (err) {
+      toast.error("Błąd podczas wylogowywania.");
     }
   };
 
@@ -165,9 +179,18 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-gray-800">Panel Główny Sekretariatu</h1>
-        <p className="text-gray-600">Szybki podgląd bieżącego stanu operacyjnego KKBus i rezerwacje.</p>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold text-gray-800">Panel Główny Sekretariatu</h1>
+          <p className="text-gray-600">Szybki podgląd bieżącego stanu operacyjnego KKBus i rezerwacje.</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          <LogOut size={18} />
+          Wyloguj się
+        </button>
       </div>
 
       {/* KPI Cards */}

@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "KKBus Sekretariat",
   description: "Moduł zarządzania dla sekretariatu KKBus",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

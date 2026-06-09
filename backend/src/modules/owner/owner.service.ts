@@ -12,7 +12,7 @@ export class OwnerService {
   ) {}
 
   // ==========================================
-  // Domain 1: Global User & Role Management
+  // Domeny 1: Zarządzanie użytkownikami i rolami
   // ==========================================
   
   async getUsers() {
@@ -76,12 +76,13 @@ export class OwnerService {
   }
 
   async createRoute(createRouteDto: CreateRouteDto) {
-    const { name, totalDistanceKm, stops } = createRouteDto;
+    const { name, totalDistanceKm, stops, label, description, color } = createRouteDto;
     const res = await this.dataSource.query(
-      `INSERT INTO routes (name, total_distance_km, stops, is_active)
-       VALUES ($1, $2, $3, TRUE) RETURNING *`,
-      [name, totalDistanceKm, JSON.stringify(stops)]
+      `INSERT INTO routes (name, label, description, color, total_distance_km, stops, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE) RETURNING *`,
+      [name, label || 'Korytarz Autobusowy', description || 'Nowa trasa w systemie', color || '#0EA5E9', totalDistanceKm, JSON.stringify(stops)]
     );
+    this.publicInfoService.clearTimetableCache(); // Invalidate cache so clients see it immediately
     return res[0];
   }
 
@@ -94,6 +95,18 @@ export class OwnerService {
     if (updateRouteDto.name !== undefined) {
       updates.push(`name = $${i++}`);
       values.push(updateRouteDto.name);
+    }
+    if (updateRouteDto.label !== undefined) {
+      updates.push(`label = $${i++}`);
+      values.push(updateRouteDto.label);
+    }
+    if (updateRouteDto.description !== undefined) {
+      updates.push(`description = $${i++}`);
+      values.push(updateRouteDto.description);
+    }
+    if (updateRouteDto.color !== undefined) {
+      updates.push(`color = $${i++}`);
+      values.push(updateRouteDto.color);
     }
     if (updateRouteDto.totalDistanceKm !== undefined) {
       updates.push(`total_distance_km = $${i++}`);
@@ -115,6 +128,7 @@ export class OwnerService {
     
     const res = await this.dataSource.query(query, values);
     if (res.length === 0) throw new BadRequestException('Route not found');
+    this.publicInfoService.clearTimetableCache(); // Invalidate cache so clients see it immediately
     return res[0];
   }
 

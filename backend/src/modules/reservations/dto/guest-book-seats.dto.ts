@@ -9,7 +9,7 @@ export class GuestBookSeatsDto {
   @ArrayMinSize(1, { message: 'Musisz zarezerwować przynajmniej 1 miejsce.' })
   @IsInt({ each: true, message: 'Numer miejsca musi być liczbą całkowitą.' })
   @Min(1, { each: true, message: 'Numer miejsca nie może być mniejszy niż 1.' })
-  @Max(60, { each: true, message: 'Numer miejsca nie może być większy niż 60.' })
+  @Max(150, { each: true, message: 'Numer miejsca nie może być większy niż 150.' })
   seatNumbers: number[];
 
   @IsEmail({}, { message: 'Nieprawidłowy format adresu e-mail.' })
