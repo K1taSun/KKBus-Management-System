@@ -11,34 +11,9 @@ import { useCart } from "@/lib/CartContext";
 
 const BACKEND_URL = "http://localhost:3000/api";
 
-const LOCATION_OPTIONS_PL = [
-  "Kraków (Wszystkie przystanki)",
-  "Kraków MDA (Dworzec)",
-  "Kraków Bronowice SKA",
-  "Katowice (Wszystkie przystanki)",
-  "Katowice Sądowa (Dworzec)",
-  "Katowice Zawodzie Centrum Przesiadkowe",
-];
-
-const LOCATION_OPTIONS_EN = [
-  "Kraków (All stops)",
-  "Kraków MDA (Station)",
-  "Kraków Bronowice SKA",
-  "Katowice (All stops)",
-  "Katowice Sądowa (Station)",
-  "Katowice Zawodzie Transfer Center",
-];
-
-const isValidLocation = (val: string) => {
-  const v = val.toLowerCase();
-  return LOCATION_OPTIONS_PL.some(opt => opt.toLowerCase().includes(v)) || 
-         LOCATION_OPTIONS_EN.some(opt => opt.toLowerCase().includes(v)) || 
-         v.includes("krak") || v.includes("katow");
-};
-
 const getSearchSchema = (t: any) => z.object({
-  from: z.string().min(1, t("search.errors.from")).refine(isValidLocation, t("search.errors.invalid")),
-  to: z.string().min(1, t("search.errors.to")).refine(isValidLocation, t("search.errors.invalid")),
+  from: z.string().min(1, t("search.errors.from")),
+  to: z.string().min(1, t("search.errors.to")),
   date: z.string().min(1, t("search.errors.date")),
   passengers: z.string().min(1, "1"),
 }).refine(data => data.from !== data.to, {
@@ -75,6 +50,25 @@ export function SearchWidget() {
   const [selectedSchedule, setSelectedSchedule] = useState<TimetableItem | null>(null);
   const [bookedSeats, setBookedSeats] = useState<number[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+  const [locationOptions, setLocationOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/public-info/routes`)
+      .then(res => res.json())
+      .then(data => {
+        const stops = new Set<string>();
+        data.forEach((route: any) => {
+          if (Array.isArray(route.stops)) {
+            route.stops.forEach((s: any) => {
+              if (typeof s === 'string') stops.add(s);
+              else if (s && s.name) stops.add(s.name);
+            });
+          }
+        });
+        setLocationOptions(Array.from(stops).sort());
+      })
+      .catch(err => console.error("Error fetching locations", err));
+  }, []);
 
   const seatSelectionRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +81,7 @@ export function SearchWidget() {
     }
   }, [selectedSchedule]);
 
-  const locationOptions = language === "pl" ? LOCATION_OPTIONS_PL : LOCATION_OPTIONS_EN;
+
 
   const {
     register,
@@ -127,35 +121,17 @@ export function SearchWidget() {
     setSelectedSeats([]);
 
     try {
-      // 1. Pobieramy rozkład jazdy z backendu
-      const res = await fetch(`${BACKEND_URL}/public-info/timetable`);
+      // Pobieramy przefiltrowany rozkład z backendu
+      const queryParams = new URLSearchParams({
+        from: data.from,
+        to: data.to,
+        date: data.date,
+        passengers: data.passengers || "1",
+      });
+      const res = await fetch(`${BACKEND_URL}/public-info/search?${queryParams.toString()}`);
       if (!res.ok) throw new Error("Błąd podczas pobierania rozkładu.");
       
-      const rawData: TimetableItem[] = await res.json();
-      
-      // 2. Filtrujemy na podstawie wyboru użytkownika
-      const isFromKrakow = data.from.toLowerCase().includes("krak");
-      const isToKatowice = data.to.toLowerCase().includes("katow");
-
-      const passengerCount = parseInt(data.passengers || "1", 10);
-      const filtered = rawData.filter(item => {
-        // Pomijamy jeśli brak miejsc
-        if (Number(item.available_seats) < passengerCount) {
-          return false;
-        }
-
-        const routeLower = item.route_name.toLowerCase();
-        
-        // Sprawdzamy kierunek
-        if (isFromKrakow && isToKatowice) {
-          return routeLower.includes("kraków") && routeLower.includes("katowice") && routeLower.indexOf("kraków") < routeLower.indexOf("katowice");
-        } else if (!isFromKrakow && !isToKatowice) {
-          return routeLower.includes("katowice") && routeLower.includes("kraków") && routeLower.indexOf("katowice") < routeLower.indexOf("kraków");
-        }
-        
-        return false;
-      });
-
+      const filtered: TimetableItem[] = await res.json();
       setSearchResults(filtered);
     } catch (err) {
       setSearchResults([]);

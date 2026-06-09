@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { SearchWidget } from "@/components/sections/SearchWidget";
+import { TimetableBoard } from "@/components/sections/TimetableBoard";
 import { useTranslation } from "@/lib/LanguageContext";
 
 export default function TimetablePage() {
@@ -25,6 +26,8 @@ export default function TimetablePage() {
         <div className="pt-8">
           <SearchWidget />
         </div>
+
+        <TimetableBoard />
       </div>
     </main>
   );

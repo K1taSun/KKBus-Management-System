@@ -90,6 +90,63 @@ export class PublicInfoService {
     return data;
   }
 
+  async searchTimetable(from: string, to: string, date: string, passengers: number) {
+    const rawData = await this.getRoutesAndTimetable();
+    const searchDate = new Date(date).toISOString().split('T')[0];
+
+    const results = [];
+    console.log(`Searching for from=${from}, to=${to}, date=${searchDate}, passengers=${passengers}`);
+    console.log(`Raw data length: ${rawData.length}`);
+
+    for (const item of rawData) {
+      const itemDate = new Date(item.departure_time).toISOString().split('T')[0];
+      if (itemDate !== searchDate) {
+        console.log(`Skipped due to date: ${itemDate} !== ${searchDate}`);
+        continue;
+      }
+
+      if (Number(item.available_seats) < passengers) {
+        console.log(`Skipped due to seats: ${item.available_seats} < ${passengers}`);
+        continue;
+      }
+
+      let parsedStops = item.stops;
+      if (typeof parsedStops === 'string') {
+        try { parsedStops = JSON.parse(parsedStops); } catch (e) { parsedStops = []; }
+      }
+      
+      const stopsList = Array.isArray(parsedStops) ? parsedStops : [];
+      if (stopsList.length < 2) {
+        console.log(`Skipped due to no stops list`);
+        continue;
+      }
+
+      const stopNames = stopsList.map((s: any) => typeof s === 'string' ? s.toLowerCase() : (s.name || '').toLowerCase());
+      
+      const fromIdx = stopNames.indexOf(from.toLowerCase());
+      const toIdx = stopNames.indexOf(to.toLowerCase());
+
+      console.log(`Matched stops for route ${item.route_name}: fromIdx=${fromIdx}, toIdx=${toIdx}`);
+
+      if (fromIdx !== -1 && toIdx !== -1 && fromIdx < toIdx) {
+        const newItem = { ...item };
+        const totalSegments = Math.max(1, stopNames.length - 1);
+        const travelledSegments = toIdx - fromIdx;
+        const ratio = travelledSegments / totalSegments;
+
+        newItem.price_base = (parseFloat(item.price_base) * ratio).toFixed(2);
+        newItem.total_distance_km = Math.round(item.total_distance_km * ratio);
+        
+        // Mapujemy do nazw przystanków w stringu (wymagane przez frontend wyświetlający trasę "Przez: X -> Y")
+        newItem.stops = stopsList.slice(fromIdx, toIdx + 1).map((s: any) => typeof s === 'string' ? s : s.name);
+
+        results.push(newItem);
+      }
+    }
+
+    return results;
+  }
+
   async getPricingAndDiscounts() {
     const cacheKey = 'pricing_discounts';
     const cached = this.getCached(cacheKey);

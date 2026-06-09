@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { PublicInfoService } from './public-info.service';
 import { Public } from '../../common/decorators/public.decorator';
 
@@ -10,6 +10,17 @@ export class PublicInfoController {
   @Get('timetable')
   async getTimetable() {
     return this.publicInfoService.getRoutesAndTimetable();
+  }
+
+  @Public()
+  @Get('search')
+  async searchTimetable(
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('date') date: string,
+    @Query('passengers') passengers: string,
+  ) {
+    return this.publicInfoService.searchTimetable(from, to, date, parseInt(passengers || '1', 10));
   }
 
   @Public()
