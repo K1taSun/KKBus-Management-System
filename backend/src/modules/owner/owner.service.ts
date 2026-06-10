@@ -71,7 +71,9 @@ export class OwnerService {
   // ==========================================
 
   async getRoutes() {
-    const res = await this.dataSource.query('SELECT * FROM routes ORDER BY id DESC');
+    const res = await this.dataSource.query(
+      "SELECT * FROM routes WHERE name NOT LIKE '%POWRÓT%' ORDER BY id ASC"
+    );
     return res;
   }
 

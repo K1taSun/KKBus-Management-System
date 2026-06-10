@@ -7,6 +7,11 @@ import { MapPin, MapPinOff, Edit, Plus, Save, X, Trash2 } from 'lucide-react';
 import { Route, StopDto } from '@/types';
 import RouteMap from '@/components/RouteMap';
 
+// Trasy powrotne są filtrowane po stronie backendu, ale ten helper
+// działa jako dodatkowe zabezpieczenie po stronie frontendu.
+const isReturnRoute = (name: string) =>
+  name.includes('POWRÓT') || name.toLowerCase().startsWith('katowice');
+
 export default function RoutesPage() {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -245,7 +250,7 @@ export default function RoutesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {routes.filter(route => !route.name.includes('POWRÓT')).map((route) => (
+        {routes.filter(route => !isReturnRoute(route.name)).map((route) => (
           <div key={route.id} className={`bg-white p-6 rounded-xl border shadow-sm flex flex-col ${route.is_active ? 'border-slate-200' : 'border-red-200 opacity-75'}`}>
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -292,7 +297,7 @@ export default function RoutesPage() {
             </div>
           </div>
         ))}
-        {routes.filter(route => !route.name.includes('POWRÓT')).length === 0 && (
+        {routes.filter(route => !isReturnRoute(route.name)).length === 0 && (
           <div className="col-span-full p-8 text-center bg-white rounded-xl border border-slate-200">
             <p className="text-slate-500">Brak tras w systemie.</p>
           </div>
