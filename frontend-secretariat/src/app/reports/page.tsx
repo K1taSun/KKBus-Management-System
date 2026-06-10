@@ -36,7 +36,7 @@ export default function ReportsPage() {
       });
       
       // Create a URL for the blob
-      const url = window.URL.createObjectURL(new Blob([response.data as any]));
+      const url = window.URL.createObjectURL(response as any);
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", `raport_operacyjny_${data.startDate}_${data.endDate}.pdf`);

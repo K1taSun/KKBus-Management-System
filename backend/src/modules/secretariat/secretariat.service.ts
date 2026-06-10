@@ -289,7 +289,7 @@ export class SecretariatService {
        JOIN buses b ON s.bus_id = b.id
        JOIN users u ON s.driver_id = u.id
        LEFT JOIN reservations rev ON rev.schedule_id = s.id
-       WHERE s.departure_time >= $1 AND s.departure_time <= $2
+       WHERE DATE(s.departure_time) >= $1 AND DATE(s.departure_time) <= $2
        GROUP BY s.id, r.name, b.registration_number, u.first_name, u.last_name
        ORDER BY s.departure_time ASC`,
       [startDate, endDate],
