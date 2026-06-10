@@ -156,11 +156,14 @@ export class DriverService {
     const { availableDate, status } = dto;
     
     // 1. Temporal restriction
-    const targetDate = new Date(availableDate);
+    const targetDateStr = availableDate.split('T')[0];
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
 
-    if (targetDate <= today) {
+    if (targetDateStr <= todayStr) {
       throw new BadRequestException('Availability can only be set for future dates.');
     }
 

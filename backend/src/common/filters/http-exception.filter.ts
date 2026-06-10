@@ -8,12 +8,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const isHttpException =
+      exception &&
+      typeof exception.getStatus === 'function' &&
+      typeof exception.getResponse === 'function';
 
-    const exceptionResponse = exception instanceof HttpException ? exception.getResponse() : null;
+    const status = isHttpException
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    const exceptionResponse = isHttpException ? exception.getResponse() : null;
 
     let message = 'Wystąpił wewnętrzny błąd serwera.';
     let errorDetails = null;

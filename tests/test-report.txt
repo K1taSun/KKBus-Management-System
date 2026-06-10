@@ -1,0 +1,301 @@
+==========================================================
+          RAPORT Z URUCHOMIENIA TESTÓW KKBUS              
+          Data: Wed Jun 10 22:25:54 CEST 2026
+==========================================================
+
+up to date, audited 540 packages in 825ms
+
+93 packages are looking for funding
+  run `npm fund` for details
+
+11 vulnerabilities (7 moderate, 4 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+[0;34m1. URUCHAMIANIE TESTÓW JEDNOSTKOWYCH (Unit Tests)...[0m
+
+> kkbus-testing-suite@1.0.0 test:unit
+> jest --config jest.config.json --selectProjects unit
+
+Running one project: unit
+PASS unit unit/loyalty.service.spec.ts
+PASS unit unit/schedules.service.spec.ts
+PASS unit unit/reservations.service.spec.ts
+  ● Console
+
+    console.log
+      [SMTP MOCK] Wysłano bilet na maila użytkownika: user-uuid-1 dla rezerwacji: [res-id-1, res-id-2]
+
+      at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
+
+    console.log
+      [SMTP MOCK] Wysłano bilet na maila użytkownika: user-uuid-1 dla rezerwacji: [res-id-1]
+
+      at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
+
+PASS unit unit/reports.service.spec.ts
+PASS unit unit/secretariat.service.spec.ts
+  ● Console
+
+    console.log
+      [SMTP MOCK] Wysłano tymczasowe hasło do: new-client@example.com
+
+      at SecretariatService.createClient (../backend/src/modules/secretariat/secretariat.service.ts:77:15)
+
+PASS unit unit/driver.service.spec.ts
+PASS unit unit/public-info.service.spec.ts
+  ● Console
+
+    console.log
+      Searching for from=Kraków, to=Kielce, date=2026-06-11, passengers=1
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:98:13)
+
+    console.log
+      Raw data length: 1
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:99:13)
+
+    console.log
+      Matched stops for route Kraków - Kielce: fromIdx=0, toIdx=2
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:129:15)
+
+    console.log
+      Searching for from=Wrocław, to=Gdańsk, date=2026-06-15, passengers=1
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:98:13)
+
+    console.log
+      Raw data length: 0
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:99:13)
+
+    console.log
+      Searching for from=A, to=B, date=2026-06-11, passengers=5
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:98:13)
+
+    console.log
+      Raw data length: 1
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:99:13)
+
+    console.log
+      Skipped due to seats: 2 < 5
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:109:17)
+
+    console.log
+      Searching for from=A, to=C, date=2026-06-11, passengers=1
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:98:13)
+
+    console.log
+      Raw data length: 1
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:99:13)
+
+    console.log
+      Matched stops for route A - D: fromIdx=0, toIdx=2
+
+      at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:129:15)
+
+PASS unit unit/owner.service.spec.ts
+PASS unit unit/auth.service.spec.ts
+  ● Console
+
+    console.log
+      [SMTP MOCK] Wysyłanie e-maila aktywacyjnego na adres: new@example.com dla klienta: KKB-2026-950119. Token: c0fdf70125a157d5598518d21013bf588f9d7be1effb32f2d5b23f04d61ccd70
+
+      at AuthService.sendActivationEmailMock (../backend/src/modules/auth/auth.service.ts:265:13)
+
+
+Test Suites: 9 passed, 9 total
+Tests:       119 passed, 119 total
+Snapshots:   0 total
+Time:        5.335 s
+Ran all test suites.
+
+[0;34m2. URUCHAMIANIE TESTÓW INTEGRACYJNYCH (Integration Tests)...[0m
+
+> kkbus-testing-suite@1.0.0 test:integration
+> jest --config jest.config.json --selectProjects integration
+
+Running one project: integration
+PASS integration integration/reservations.integration.spec.ts
+  ● Console
+
+    console.warn
+      WARNING: Zmienna środowiskowa JWT_SECRET nie jest ustawiona. Używam domyślnego klucza deweloperskiego. Ustaw bezpieczny klucz w produkcji!
+
+      18 |             );
+      19 |           }
+    > 20 |           console.warn(
+         |                   ^
+      21 |             'WARNING: Zmienna środowiskowa JWT_SECRET nie jest ustawiona. ' +
+      22 |             'Używam domyślnego klucza deweloperskiego. Ustaw bezpieczny klucz w produkcji!',
+      23 |           );
+
+      at InstanceWrapper.useFactory [as metatype] (../backend/src/modules/auth/auth.module.ts:20:19)
+      at TestingInjector.instantiateClass (node_modules/@nestjs/core/injector/injector.js:376:55)
+      at callback (node_modules/@nestjs/core/injector/injector.js:65:45)
+      at TestingInjector.resolveConstructorParams (node_modules/@nestjs/core/injector/injector.js:145:24)
+      at TestingInjector.loadInstance (node_modules/@nestjs/core/injector/injector.js:70:13)
+      at TestingInjector.loadProvider (node_modules/@nestjs/core/injector/injector.js:98:9)
+      at node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 4)
+      at TestingInstanceLoader.createInstancesOfProviders (node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 5)
+      at TestingInstanceLoader.createInstances (node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (node_modules/@nestjs/testing/testing-module.builder.js:118:9)
+      at TestingModuleBuilder.compile (node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at createTestApp (integration/setup.ts:32:40)
+      at Object.<anonymous> (integration/reservations.integration.spec.ts:12:11)
+
+    console.log
+      [SMTP MOCK] Wysłano bilet na maila użytkownika: user-id-123 dla rezerwacji: [new-reservation-id-123]
+
+      at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
+
+    console.log
+      [SMTP GUEST MOCK] Wysłano bilet na maila gościa: guest@example.com (Numer Klienta: KKB-2026-388238)
+          Trasa: Kraków - Katowice
+          Odjazd: 11.06.2026, 22:26:04
+          Miejsce(a): 
+          Rezerwacje: [guest-reservation-id]
+
+      at ReservationsService.sendGuestReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:452:13)
+
+PASS integration integration/auth.integration.spec.ts
+  ● Console
+
+    console.warn
+      WARNING: Zmienna środowiskowa JWT_SECRET nie jest ustawiona. Używam domyślnego klucza deweloperskiego. Ustaw bezpieczny klucz w produkcji!
+
+      18 |             );
+      19 |           }
+    > 20 |           console.warn(
+         |                   ^
+      21 |             'WARNING: Zmienna środowiskowa JWT_SECRET nie jest ustawiona. ' +
+      22 |             'Używam domyślnego klucza deweloperskiego. Ustaw bezpieczny klucz w produkcji!',
+      23 |           );
+
+      at InstanceWrapper.useFactory [as metatype] (../backend/src/modules/auth/auth.module.ts:20:19)
+      at TestingInjector.instantiateClass (node_modules/@nestjs/core/injector/injector.js:376:55)
+      at callback (node_modules/@nestjs/core/injector/injector.js:65:45)
+      at TestingInjector.resolveConstructorParams (node_modules/@nestjs/core/injector/injector.js:145:24)
+      at TestingInjector.loadInstance (node_modules/@nestjs/core/injector/injector.js:70:13)
+      at TestingInjector.loadProvider (node_modules/@nestjs/core/injector/injector.js:98:9)
+      at node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 4)
+      at TestingInstanceLoader.createInstancesOfProviders (node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 5)
+      at TestingInstanceLoader.createInstances (node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (node_modules/@nestjs/testing/testing-module.builder.js:118:9)
+      at TestingModuleBuilder.compile (node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at createTestApp (integration/setup.ts:32:40)
+      at Object.<anonymous> (integration/auth.integration.spec.ts:12:11)
+
+    console.log
+      [SMTP MOCK] Wysyłanie e-maila aktywacyjnego na adres: test-integration@example.com dla klienta: KKB-2026-998314. Token: 255fe3cdbff16a51caf1455bb4f70e4056cdaab877230dea8149652eb873a997
+
+      at AuthService.sendActivationEmailMock (../backend/src/modules/auth/auth.service.ts:265:13)
+
+
+Test Suites: 2 passed, 2 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        2.994 s, estimated 3 s
+Ran all test suites.
+
+[0;34m3. URUCHAMIANIE SCENARIUSZY E2E (End-to-End)...[0m
+
+> kkbus-testing-suite@1.0.0 test:e2e
+> ts-node e2e/run-e2e.ts
+
+=== URUCHAMIANIE TESTÓW E2E ===
+
+Uruchamianie Scenariusza: Rezerwacja Klienta...
+  -> Poprawnie odrzucono rejestrację osoby poniżej 13 roku życia (HTTP 400)
+  -> Rejestrowanie użytkownika: e2e.client.71718@example.com...
+  -> Użytkownik zarejestrowany. Numer klienta: KKB-2026-691524
+  -> Logowanie...
+  -> Zalogowano pomyślnie. Tokeny JWT odebrane w ciasteczkach HttpOnly.
+  -> Pobieranie profilu...
+  -> Profil pobrany. Imię: Tomasz, Rola: Klient, Punkty lojalnościowe: 0
+  -> Pobieranie rozkładu jazdy...
+  -> Znaleziono pasujący kurs #1058 (odjazd: 12.06.2026, 06:00:00)
+  -> Pobieranie szczegółów kursu #1058 w celu znalezienia wolnego miejsca...
+  -> Rezerwacja wolnego miejsca numer 1...
+  -> [INFO] Miejsce 1 jest zablokowane w bazie (np. z powodu starej rezerwacji). Próba kolejnego...
+  -> Rezerwacja wolnego miejsca numer 2...
+  -> [INFO] Miejsce 2 jest zablokowane w bazie (np. z powodu starej rezerwacji). Próba kolejnego...
+  -> Rezerwacja wolnego miejsca numer 3...
+  -> [INFO] Miejsce 3 jest zablokowane w bazie (np. z powodu starej rezerwacji). Próba kolejnego...
+  -> Rezerwacja wolnego miejsca numer 4...
+  -> [INFO] Miejsce 4 jest zablokowane w bazie (np. z powodu starej rezerwacji). Próba kolejnego...
+  -> Rezerwacja wolnego miejsca numer 5...
+  -> Rezerwacja utworzona pomyślnie. ID: 991acb98-64e0-4b2e-b62f-4a39f94f5d54
+  -> Sprawdzanie historii rezerwacji...
+  -> Rezerwacja poprawnie zarejestrowana w historii.
+  -> Anulowanie rezerwacji...
+  -> Rezerwacja została pomyślnie anulowana. Miejsce zostało zwolnione.
+✅ Scenariusz: Rezerwacja Klienta zakończona sukcesem!
+
+Uruchamianie Scenariusza: Blokada Brute-Force...
+  -> Rejestrowanie użytkownika testowego: e2e.lockout.1005@example.com...
+  -> Próba logowania z błędnym hasłem [Próba 1/3]...
+  -> Próba logowania z błędnym hasłem [Próba 2/3]...
+  -> Próba logowania z błędnym hasłem [Próba 3/3 - powinna wywołać zawieszenie]...
+  -> Komunikat po 3. próbie: "Błędne dane logowania."
+  -> Próba zalogowania POPRAWNYM hasłem podczas aktywnego zawieszenia...
+  -> [SUKCES] Logowanie poprawnym hasłem zostało odrzucone z komunikatem: "Konto jest zawieszone. Spróbuj ponownie za 15 min."
+✅ Scenariusz: Blokada Brute-Force zakończona sukcesem!
+
+Wszystkie testy E2E zakończone pomyślnie!
+
+[0;34m4. URUCHAMIANIE TESTÓW WYDAJNOŚCIOWYCH (Performance)...[0m
+
+> kkbus-testing-suite@1.0.0 test:perf
+> ts-node performance/load-test.ts
+
+=== URUCHAMIANIE TESTÓW WYDAJNOŚCIOWYCH ===
+Symulacja 50 współbieżnych użytkowników odpytujących API rozkładu jazdy...
+
+--- WYNIKI TESTU WYDAJNOŚCIOWEGO ---
+Całkowity czas wykonania serii:  333 ms
+Liczba wysłanych żądań:          50
+Udane zapytania (HTTP 200):      50 (100.0%)
+Nieudane zapytania:              0 (0.0%)
+Minimalny czas odpowiedzi:       36 ms
+Maksymalny czas odpowiedzi:      324 ms
+Średni czas odpowiedzi (Avg):    208.3 ms
+Percentyl 50 (Mediana):          228 ms
+Percentyl 90 (p90):              317 ms
+Percentyl 99 (p99):              324 ms
+
+--- WERYFIKACJA WYMAGAŃ NIEFUNKCJONALNYCH (SLA) ---
+Wymaganie: Czas reakcji do 3.0s dla 30-50 współbieżnych użytkowników.
+✅ STATUS: ZDANE (Czas reakcji mieści się w limitach SLA, brak błędów HTTP).
+----------------------------------------------------
+
+==========================================================
+                      PODSUMOWANIE                        
+==========================================================
+Testy jednostkowe:     [0;32mZDANE[0m
+Testy integracyjne:    [0;32mZDANE[0m
+Testy E2E:             [0;32mZDANE / POMINIĘTE[0m
+Testy wydajnościowe:   [0;32mZDANE / POMINIĘTE[0m

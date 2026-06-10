@@ -1,0 +1,27 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testRegex": ".*\\.spec\\.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "testEnvironment": "node",
+  "projects": [
+    {
+      "displayName": "unit",
+      "testMatch": ["<rootDir>/unit/**/*.spec.ts"],
+      "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+      },
+      "testEnvironment": "node"
+    },
+    {
+      "displayName": "integration",
+      "testMatch": ["<rootDir>/integration/**/*.spec.ts"],
+      "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+      },
+      "testEnvironment": "node"
+    }
+  ]
+}

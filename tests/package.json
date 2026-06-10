@@ -1,0 +1,36 @@
+{
+  "name": "kkbus-testing-suite",
+  "version": "1.0.0",
+  "description": "Comprehensive testing suite for KKBus Management System",
+  "scripts": {
+    "test": "jest --config jest.config.json --runInBand",
+    "test:unit": "jest --config jest.config.json --selectProjects unit",
+    "test:integration": "jest --config jest.config.json --selectProjects integration",
+    "test:e2e": "ts-node e2e/run-e2e.ts",
+    "test:perf": "ts-node performance/load-test.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/jwt": "^10.1.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/testing": "^10.4.22",
+    "@types/bcrypt": "^5.0.0",
+    "@types/jest": "^29.5.12",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^20.11.24",
+    "@types/supertest": "^6.0.2",
+    "bcrypt": "^5.1.1",
+    "jest": "^29.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "supertest": "^6.3.4",
+    "typeorm": "^0.3.17",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
