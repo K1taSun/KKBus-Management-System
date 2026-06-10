@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+process.env.JWT_SECRET = 'test-secret-key-for-unit-tests';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, Module, Global, DynamicModule } from '@nestjs/common';
 import { AuthModule } from '../../backend/src/modules/auth/auth.module';

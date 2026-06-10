@@ -158,9 +158,9 @@ export class DriverService {
     // 1. Temporal restriction
     const targetDateStr = availableDate.split('T')[0];
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const year = today.getUTCFullYear();
+    const month = String(today.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(today.getUTCDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
 
     if (targetDateStr <= todayStr) {

@@ -20,7 +20,7 @@ async function main() {
     console.warn('\n[OSTRZEŻENIE] Serwer backendu (http://localhost:3000/api) nie działa.');
     console.warn('Aby uruchomić testy scenariuszowe E2E, włącz projekt za pomocą start.sh lub docker-compose.');
     console.warn('Scenariusze E2E zostaną pominięte.\n');
-    process.exit(0);
+    process.exit(2);
   }
 
   try {

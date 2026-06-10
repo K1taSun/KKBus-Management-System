@@ -64,10 +64,12 @@ CREATE TABLE reservations (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     seat_number INT NOT NULL CHECK (seat_number > 0),
     status VARCHAR(50) DEFAULT 'Potwierdzona' CHECK (status IN ('Potwierdzona', 'Opłacona', 'Anulowana')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- Gwarancja, że na 1 kurs = 1 konkretne miejsce
-    UNIQUE (schedule_id, seat_number)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Gwarancja, że na 1 kurs = 1 konkretne aktywne miejsce (anulowane miejsca można rezerwować ponownie)
+CREATE UNIQUE INDEX unique_active_reservation ON reservations (schedule_id, seat_number) WHERE (status != 'Anulowana');
+
 
 -- Punkty Lojalnościowe
 CREATE TABLE loyalty_points (

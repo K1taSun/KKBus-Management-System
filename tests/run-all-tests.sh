@@ -54,13 +54,17 @@ else
 fi
 
 if [ $E2E_STATUS -eq 0 ]; then
-  echo -e "Testy E2E:             ${GREEN}ZDANE / POMINIĘTE${NC}" | tee -a "$REPORT_FILE"
+  echo -e "Testy E2E:             ${GREEN}ZDANE${NC}" | tee -a "$REPORT_FILE"
+elif [ $E2E_STATUS -eq 2 ]; then
+  echo -e "Testy E2E:             ${YELLOW}POMINIĘTE${NC}" | tee -a "$REPORT_FILE"
 else
   echo -e "Testy E2E:             ${RED}BŁĄD (status: $E2E_STATUS)${NC}" | tee -a "$REPORT_FILE"
 fi
 
 if [ $PERF_STATUS -eq 0 ]; then
-  echo -e "Testy wydajnościowe:   ${GREEN}ZDANE / POMINIĘTE${NC}" | tee -a "$REPORT_FILE"
+  echo -e "Testy wydajnościowe:   ${GREEN}ZDANE${NC}" | tee -a "$REPORT_FILE"
+elif [ $PERF_STATUS -eq 2 ]; then
+  echo -e "Testy wydajnościowe:   ${YELLOW}POMINIĘTE${NC}" | tee -a "$REPORT_FILE"
 else
   echo -e "Testy wydajnościowe:   ${RED}BŁĄD (status: $PERF_STATUS)${NC}" | tee -a "$REPORT_FILE"
 fi

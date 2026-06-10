@@ -41,7 +41,7 @@ async function main() {
     console.warn('\n[OSTRZEŻENIE] Serwer backendu (http://localhost:3000/api) nie działa.');
     console.warn('Test wydajnościowy wymaga działającego backendu.');
     console.warn('Test wydajnościowy zostanie pominięty.\n');
-    process.exit(0);
+    process.exit(2);
   }
 
   const startTotal = Date.now();
