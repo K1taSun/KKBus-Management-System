@@ -67,7 +67,7 @@ export class SchedulesService {
          b.capacity,
          (b.capacity - COUNT(res.id)) AS available_seats,
          r.stops,
-         ARRAY_AGG(res.seat_number)   AS booked_seats
+         COALESCE(ARRAY_AGG(res.seat_number) FILTER (WHERE res.seat_number IS NOT NULL), '{}')   AS booked_seats
        FROM schedules s
        JOIN routes r  ON s.route_id = r.id
        JOIN buses b   ON s.bus_id   = b.id

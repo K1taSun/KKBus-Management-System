@@ -510,16 +510,9 @@ export class ReservationsService {
       const departureDate = new Date(departure_time);
       const now = new Date();
 
-      // Walidacja temporalna: Rezerwacja możliwa najpóźniej na 2h przed odjazdem
-      const hoursUntilDeparture = (departureDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-      if (hoursUntilDeparture < 2) {
-        throw new BadRequestException('Rezerwacja jest możliwa najpóźniej na 2 godziny przed odjazdem.');
-      }
-
-      // Walidacja temporalna: Rezerwacja możliwa maksymalnie 7 dni przed odjazdem
-      const daysUntilDeparture = (departureDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-      if (daysUntilDeparture > 7) {
-        throw new BadRequestException('Nie można rezerwować miejsc z wyprzedzeniem większym niż 7 dni.');
+      // Walidacja temporalna dla sekretariatu: Kurs musi być w przyszłości
+      if (departureDate <= now) {
+        throw new BadRequestException('Nie można rezerwować miejsc na kursy, które już się rozpoczęły lub zakończyły.');
       }
 
       // 3. Walidacja pojemności i poprawności numerów siedzeń
@@ -543,17 +536,22 @@ export class ReservationsService {
         throw new ConflictException(`Wybrane miejsca (${occupiedList}) są już zajęte.`);
       }
 
+      // 5. Pobranie aktualnej polityki cenowej
+      const policyRes = await queryRunner.manager.query(
+        `SELECT student_discount_percent, child_discount_percent FROM pricing_policies WHERE is_current = TRUE LIMIT 1`
+      );
+      const policy = policyRes[0] || { student_discount_percent: 51, child_discount_percent: 30 };
+
       const priceBaseVal = parseFloat(price_base || '0');
       const reservationIds: string[] = [];
 
-      // 5. Zapis rezerwacji jako 'Opłacona' oraz utworzenie powiązanych płatności (natychmiastowych)
-      // W Sekretariacie zwykle rezerwacja OnBehalf to brak zniżki lub ręcznie przypisana zniżka, my po prostu wpisujemy NORMAL i cenę bazową (albo używamy discount z dto)
+      // 6. Zapis rezerwacji jako 'Opłacona' oraz utworzenie powiązanych płatności (natychmiastowych)
       for (const seatObj of seats) {
         let finalPrice = priceBaseVal;
         if (seatObj.discountType === 'STUDENT') {
-          finalPrice = priceBaseVal * (1 - 51 / 100);
+          finalPrice = priceBaseVal * (1 - policy.student_discount_percent / 100);
         } else if (seatObj.discountType === 'CHILD') {
-          finalPrice = priceBaseVal * (1 - 30 / 100);
+          finalPrice = priceBaseVal * (1 - policy.child_discount_percent / 100);
         }
 
         const res = await queryRunner.manager.query(

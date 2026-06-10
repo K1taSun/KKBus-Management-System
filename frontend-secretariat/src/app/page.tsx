@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const [selectedScheduleId, setSelectedScheduleId] = useState<string>("");
   const [scheduleDetails, setScheduleDetails] = useState<any>(null);
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  const [selectedDiscount, setSelectedDiscount] = useState<string>("NORMAL");
   const [bookingLoading, setBookingLoading] = useState(false);
   const [fetchingSeats, setFetchingSeats] = useState(false);
 
@@ -25,7 +26,7 @@ export default function DashboardPage() {
       const [mRes, cRes, sRes] = await Promise.all([
         apiGet<any>("/secretariat/dashboard"),
         apiGet<any[]>("/secretariat/clients"),
-        apiGet<any[]>("/secretariat/schedules"),
+        apiGet<any[]>("/secretariat/schedules/future"),
       ]);
       setMetrics(mRes);
       setClients(cRes);
@@ -80,11 +81,18 @@ export default function DashboardPage() {
     try {
       await apiPost(`/secretariat/reservations/behalf/${selectedClientId}`, {
         scheduleId: Number(selectedScheduleId),
-        seatNumbers: [selectedSeat],
+        seats: [
+          {
+            seatNumber: selectedSeat,
+            discountType: selectedDiscount,
+          }
+        ],
+        paymentMethod: "ON_BOARD",
       });
 
       toast.success("Rezerwacja telefoniczna została pomyślnie utworzona i opłacona!");
       setSelectedSeat(null);
+      setSelectedDiscount("NORMAL");
       
       // Refresh seats and metrics
       const updatedSeats = await apiGet<any>(`/schedules/${selectedScheduleId}`);
@@ -272,6 +280,21 @@ export default function DashboardPage() {
                       {s.route_name} - {new Date(s.departure_time).toLocaleString("pl-PL")} ({s.bus_plate})
                     </option>
                   ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Wybierz Ulgę / Zniżkę
+                </label>
+                <select
+                  value={selectedDiscount}
+                  onChange={(e) => setSelectedDiscount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="NORMAL">Normalny (bez ulgi)</option>
+                  <option value="STUDENT">Studencki (51% zniżki)</option>
+                  <option value="CHILD">Dziecięcy (30% zniżki)</option>
                 </select>
               </div>
 

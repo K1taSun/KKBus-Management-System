@@ -37,6 +37,11 @@ export class SecretariatController {
     return this.secretariatService.getBuses();
   }
 
+  @Get('schedules/future')
+  getFutureSchedules() {
+    return this.secretariatService.getFutureSchedules();
+  }
+
   @Get('schedules')
   getSchedules() {
     return this.secretariatService.getSchedules();

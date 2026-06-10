@@ -277,6 +277,21 @@ export class SecretariatService {
     `);
   }
 
+  async getFutureSchedules() {
+    return this.dataSource.query(`
+      SELECT s.id, s.departure_time, s.arrival_time, s.price_base,
+             r.name as route_name,
+             b.registration_number as bus_plate,
+             u.first_name as driver_first_name, u.last_name as driver_last_name
+      FROM schedules s
+      JOIN routes r ON s.route_id = r.id
+      JOIN buses b ON s.bus_id = b.id
+      JOIN users u ON s.driver_id = u.id
+      WHERE s.departure_time >= NOW()
+      ORDER BY s.departure_time ASC
+    `);
+  }
+
   async generateReport(startDate: string, endDate: string) {
     const data = await this.dataSource.query(
       `SELECT s.id, s.departure_time, s.arrival_time,
