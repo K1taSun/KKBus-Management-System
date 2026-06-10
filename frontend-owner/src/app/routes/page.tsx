@@ -245,7 +245,7 @@ export default function RoutesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {routes.map((route) => (
+        {routes.filter(route => !route.name.includes('POWRÓT')).map((route) => (
           <div key={route.id} className={`bg-white p-6 rounded-xl border shadow-sm flex flex-col ${route.is_active ? 'border-slate-200' : 'border-red-200 opacity-75'}`}>
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -292,7 +292,7 @@ export default function RoutesPage() {
             </div>
           </div>
         ))}
-        {routes.length === 0 && (
+        {routes.filter(route => !route.name.includes('POWRÓT')).length === 0 && (
           <div className="col-span-full p-8 text-center bg-white rounded-xl border border-slate-200">
             <p className="text-slate-500">Brak tras w systemie.</p>
           </div>
