@@ -20,6 +20,7 @@ interface PressRelease {
   date: string;
   title: string;
   lead: string;
+  content: string;
   category: string;
 }
 
@@ -51,6 +52,7 @@ const localTranslations = {
         date: "20.05.2026",
         title: "KKBus wdraża nowoczesną platformę rezerwacji przejazdów dla pasażerów",
         lead: "Innowacyjny system rezerwacji eliminuje zjawisko overbookingu, oferując automatyczne przypisywanie miejsc oraz nowoczesny program lojalnościowy z wymianą punktów.",
+        content: "Nasz nowy system rezerwacji to przełom w obsłudze pasażerów na trasie Kraków-Katowice. Wprowadzone zmiany pozwolą na pełną optymalizację procesu zakupu biletów, gwarancję miejsca siedzącego oraz transparentność cenową. Pasażerowie zyskują także dostęp do aplikacji mobilnej, dzięki której mogą śledzić położenie autokaru w czasie rzeczywistym.",
         category: "innowacje"
       },
       {
@@ -58,6 +60,7 @@ const localTranslations = {
         date: "28.04.2026",
         title: "Flota KKBus powiększa się o 5 ekologicznych autokarów spełniających normy Euro 6",
         lead: "Przewoźnik kontynuuje inwestycje w zielony transport. Nowe pojazdy wyjadą na trasę Kraków ↔ Katowice już od maja, zapewniając najwyższy standard i niską emisję spalin.",
+        content: "Nowe Mercedesy Tourismo to nie tylko wyższy komfort podróży (więcej miejsca na nogi, szybsze Wi-Fi), ale przede wszystkim drastyczne obniżenie śladu węglowego firmy. Zakup pięciu nowoczesnych maszyn to krok w stronę realizacji naszej strategii 'Zielony Transport 2030'.",
         category: "flota"
       },
       {
@@ -65,6 +68,7 @@ const localTranslations = {
         date: "15.03.2026",
         title: "KKBus przekroczył próg 100 000 zadowolonych pasażerów w tym roku",
         lead: "Dzięki wysokiej częstotliwości kursowania, bezpieczeństwu oraz komfortowej flocie, KKBus staje się pierwszym wyborem dla osób podróżujących między stolicami Małopolski i Śląska.",
+        content: "Z radością informujemy, że zaledwie w połowie marca obsłużyliśmy stutysięcznego pasażera w tym roku kalendarzowym. Ten imponujący wynik zawdzięczamy rosnącemu zaufaniu studentów, pracowników dojeżdżających na Śląsk oraz turystów. Planujemy dalsze zagęszczenie siatki połączeń w godzinach szczytu.",
         category: "biznes"
       }
     ],
@@ -72,17 +76,23 @@ const localTranslations = {
       {
         title: "Logotypy KKBus Sp. z o.o.",
         description: "Paczka zawierająca oficjalne logo w formatach wektorowych (SVG, EPS) oraz rastrowych (PNG, JPG) w wersjach jasnej i ciemnej.",
-        size: "2.4 MB"
+        size: "2.4 MB",
+        url: "/press-kit/logotypy_kkbus.zip",
+        filename: "logotypy_kkbus.zip"
       },
       {
         title: "Zdjęcia autokarów i busów",
         description: "Wysokiej jakości zdjęcia promocyjne naszej floty pojazdów w rozdzielczości do publikacji prasowych oraz internetowych.",
-        size: "18.5 MB"
+        size: "18.5 MB",
+        url: "/press-kit/flota_zdjecia_kkbus.zip",
+        filename: "flota_zdjecia_kkbus.zip"
       },
       {
         title: "Materiały informacyjne o firmie",
         description: "Folder zawierający historię firmy KKBus, dane statystyczne dotyczące połączenia Kraków-Katowice oraz życiorysy zarządu.",
-        size: "1.2 MB"
+        size: "1.2 MB",
+        url: "/press-kit/Materialy_Informacyjne_KKBus.pdf",
+        filename: "Materialy_Informacyjne_KKBus.pdf"
       }
     ]
   },
@@ -113,6 +123,7 @@ const localTranslations = {
         date: "20.05.2026",
         title: "KKBus launches modern passenger ride reservation platform",
         lead: "The innovative booking system eliminates overbooking, offering automated seat assignment and a modern loyalty program with point redemptions.",
+        content: "Our new booking system is a breakthrough in passenger service on the Kraków-Katowice route. These changes will fully optimize the ticketing process, guarantee a seat, and provide price transparency. Passengers also gain access to a mobile app to track coach locations in real time.",
         category: "innowacje"
       },
       {
@@ -120,6 +131,7 @@ const localTranslations = {
         date: "28.04.2026",
         title: "KKBus fleet expands by 5 green Euro 6 compliant coaches",
         lead: "The carrier continues its investment in green transport. New vehicles will enter the Kraków ↔ Katowice route in May, ensuring top standards and low exhaust emissions.",
+        content: "The new Mercedes Tourismo coaches mean not only higher travel comfort (more legroom, faster Wi-Fi), but primarily a drastic reduction in the company's carbon footprint. The purchase of five modern machines is a step towards realizing our 'Green Transport 2030' strategy.",
         category: "flota"
       },
       {
@@ -127,6 +139,7 @@ const localTranslations = {
         date: "15.03.2026",
         title: "KKBus exceeded the threshold of 100,000 satisfied passengers this year",
         lead: "Thanks to high frequency of service, safety, and a comfortable fleet, KKBus is becoming the first choice for travelers between the capitals of Małopolska and Silesia.",
+        content: "We are pleased to announce that just by mid-March we served our 100,000th passenger this calendar year. We owe this impressive result to the growing trust of students, commuters to Silesia, and tourists. We plan to further increase the frequency of connections during peak hours.",
         category: "biznes"
       }
     ],
@@ -134,17 +147,23 @@ const localTranslations = {
       {
         title: "KKBus Sp. z o.o. Logotypes",
         description: "Package containing official logos in vector formats (SVG, EPS) and raster formats (PNG, JPG) in light and dark versions.",
-        size: "2.4 MB"
+        size: "2.4 MB",
+        url: "/press-kit/logotypy_kkbus.zip",
+        filename: "logotypy_kkbus.zip"
       },
       {
         title: "Coaches and Buses Photos",
         description: "High-quality promotional photos of our vehicle fleet in resolutions suitable for print and online publications.",
-        size: "18.5 MB"
+        size: "18.5 MB",
+        url: "/press-kit/flota_zdjecia_kkbus.zip",
+        filename: "flota_zdjecia_kkbus.zip"
       },
       {
         title: "Company Fact Sheet Materials",
         description: "Folder containing KKBus company history, statistical data regarding the Kraków-Katowice route, and board bios.",
-        size: "1.2 MB"
+        size: "1.2 MB",
+        url: "/press-kit/Materialy_Informacyjne_KKBus.pdf",
+        filename: "Materialy_Informacyjne_KKBus.pdf"
       }
     ]
   }
@@ -155,6 +174,31 @@ export default function BiuroPrasowePage() {
   const tLocal = localTranslations[language] || localTranslations["pl"];
 
   const [activeCategory, setActiveCategory] = useState("all");
+  const [expandedReleases, setExpandedReleases] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (id: string) => {
+    setExpandedReleases(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const handleShare = async (title: string, text: string) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: title,
+          text: text,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert(language === "pl" ? "Link skopiowano do schowka!" : "Link copied to clipboard!");
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
 
   useEffect(() => {
     document.title = language === "pl" ? "Biuro Prasowe - KKBus" : "Press Room - KKBus";
@@ -269,12 +313,23 @@ export default function BiuroPrasowePage() {
                 </div>
                 <h3 className="text-xl font-bold text-primary hover:text-action transition-colors cursor-pointer">{release.title}</h3>
                 <p className="text-text-muted leading-relaxed text-sm">{release.lead}</p>
+                {expandedReleases[release.id] && (
+                  <div className="pt-2 text-sm text-gray-700 border-t border-gray-50 leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
+                    {release.content}
+                  </div>
+                )}
                 
                 <div className="flex items-center justify-between pt-2 border-t border-gray-50 text-xs font-bold text-action">
-                  <button className="flex items-center gap-1 hover:underline">
-                    {tLocal.readFull} <ArrowRight size={14} />
+                  <button 
+                    onClick={() => toggleExpand(release.id)}
+                    className="flex items-center gap-1 hover:underline"
+                  >
+                    {expandedReleases[release.id] ? (language === 'pl' ? "Zwiń" : "Collapse") : tLocal.readFull} <ArrowRight size={14} className={expandedReleases[release.id] ? "rotate-90 transition-transform" : "transition-transform"} />
                   </button>
-                  <button className="flex items-center gap-1 text-gray-400 hover:text-action transition-colors">
+                  <button 
+                    onClick={() => handleShare(release.title, release.lead)}
+                    className="flex items-center gap-1 text-gray-400 hover:text-action transition-colors"
+                  >
                     <Share2 size={14} /> {tLocal.share}
                   </button>
                 </div>
@@ -301,9 +356,13 @@ export default function BiuroPrasowePage() {
               
               <div className="pt-6 border-t border-gray-50 mt-6 flex justify-between items-center text-xs font-bold text-text-muted">
                 <span>{tLocal.kitSize}: {kit.size}</span>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-action transition-colors">
+                <a 
+                  href={kit.url} 
+                  download={kit.filename}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-action transition-colors cursor-pointer"
+                >
                   <Download size={14} /> {tLocal.downloadBtn}
-                </button>
+                </a>
               </div>
             </div>
           ))}

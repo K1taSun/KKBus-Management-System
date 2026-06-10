@@ -59,15 +59,14 @@ export class SecretariatController {
 
   @Get('reports')
   async getReports(@Query() query: GenerateReportDto, @Res({ passthrough: true }) res: Response) {
-    const pdfDoc: any = await this.secretariatService.generateReport(query.startDate, query.endDate);
+    const pdfBuffer: Buffer = await this.secretariatService.generateReport(query.startDate, query.endDate);
     
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': 'attachment; filename="raport.pdf"',
     });
 
-    pdfDoc.pipe(res);
-    pdfDoc.end();
+    return new StreamableFile(pdfBuffer);
   }
 
   @Patch('buses/:id/status')

@@ -164,8 +164,11 @@ export default function DynamicMap() {
       try {
         const fetchedRoutes = await apiGet<Route[]>("/public-info/routes");
         
+        // Filter out return routes to avoid duplicating lines on the map
+        const uniqueRoutes = fetchedRoutes.filter(r => !r.name.includes("POWRÓT"));
+
         // Upewnij się, że obiekt przystanku ma właściwość 'id' aby nie zepsuć istniejących kluczy
-        const normalized = fetchedRoutes.map(route => ({
+        const normalized = uniqueRoutes.map(route => ({
           ...route,
           color: route.color || '#0EA5E9',
           label: route.label || 'Korytarz Autobusowy',

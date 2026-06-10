@@ -14,7 +14,7 @@ export class ReservationsService {
   ) {}
 
   async bookSeats(userId: string, dto: BookSeatsDto) {
-    const { scheduleId, seatNumbers } = dto;
+    const { scheduleId, seats, useLoyaltyPoints } = dto;
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -81,11 +81,13 @@ export class ReservationsService {
       }
 
       // 3. Walidacja pojemności i poprawności numerów siedzeń
-      for (const seat of seatNumbers) {
-        if (seat < 1 || seat > capacity) {
-          throw new BadRequestException(`Miejsce ${seat} wykracza poza pojemność pojazdu (1-${capacity}).`);
+      for (const seatObj of seats) {
+        if (seatObj.seatNumber < 1 || seatObj.seatNumber > capacity) {
+          throw new BadRequestException(`Miejsce ${seatObj.seatNumber} wykracza poza pojemność pojazdu (1-${capacity}).`);
         }
       }
+
+      const seatNumbers = seats.map(s => s.seatNumber);
 
       // 4. Sprawdzenie czy wybrane miejsca są już zajęte
       const occupiedSeatsRes = await queryRunner.manager.query(
@@ -99,15 +101,83 @@ export class ReservationsService {
         throw new ConflictException(`Wybrane miejsca (${occupiedList}) są już zajęte.`);
       }
 
-      // 5. Zapis rezerwacji w bazie danych
+      // 5. Pobranie aktualnej polityki cenowej
+      const policyRes = await queryRunner.manager.query(
+        `SELECT student_discount_percent, child_discount_percent, loyalty_point_value FROM pricing_policies WHERE is_current = TRUE LIMIT 1`
+      );
+      const policy = policyRes[0] || { student_discount_percent: 51, child_discount_percent: 30, loyalty_point_value: 0.10 };
+
+      // 6. Wyliczenie całkowitej kwoty
+      let totalAmount = 0;
+      const basePrice = parseFloat(scheduleRes[0].price_base || '0');
+      
+      const seatsWithPrice = seats.map(seatObj => {
+        let finalPrice = basePrice;
+        if (seatObj.discountType === 'STUDENT') {
+          finalPrice = basePrice * (1 - policy.student_discount_percent / 100);
+        } else if (seatObj.discountType === 'CHILD') {
+          finalPrice = basePrice * (1 - policy.child_discount_percent / 100);
+        }
+        totalAmount += finalPrice;
+        return { ...seatObj, finalPrice };
+      });
+
+      // 7. Obsługa punktów lojalnościowych
+      let pointsUsed = 0;
+      let discountFromPoints = 0;
+      
+      if (useLoyaltyPoints) {
+        const loyaltyRes = await queryRunner.manager.query(
+          `SELECT points_balance FROM loyalty_points WHERE user_id = $1 FOR UPDATE`,
+          [userId]
+        );
+        if (loyaltyRes.length > 0) {
+          const balance = loyaltyRes[0].points_balance;
+          const maxPointsDiscount = balance * parseFloat(policy.loyalty_point_value);
+          
+          if (maxPointsDiscount >= totalAmount) {
+            // Pokrywa całą kwotę (lub resztę)
+            pointsUsed = Math.ceil(totalAmount / parseFloat(policy.loyalty_point_value));
+            discountFromPoints = totalAmount;
+          } else {
+            // Wykorzystuje wszystkie punkty
+            pointsUsed = balance;
+            discountFromPoints = maxPointsDiscount;
+          }
+
+          if (pointsUsed > 0) {
+            await queryRunner.manager.query(
+              `UPDATE loyalty_points SET points_balance = points_balance - $1, last_transaction_date = CURRENT_TIMESTAMP WHERE user_id = $2`,
+              [pointsUsed, userId]
+            );
+            await queryRunner.manager.query(
+              `INSERT INTO loyalty_transactions (user_id, points_delta, description) VALUES ($1, $2, $3)`,
+              [userId, -pointsUsed, `Wykorzystano przy rezerwacji kursu #${scheduleId}`]
+            );
+          }
+        }
+      }
+
+      // Proporcjonalne rozłożenie zniżki punktowej na miejsca (uproszczone: równo lub odejmowane z całości, my zapisujemy po prostu final_price pomniejszony)
+      const discountPerSeat = seatsWithPrice.length > 0 ? (discountFromPoints / seatsWithPrice.length) : 0;
+
+      // 8. Zapis rezerwacji w bazie danych i płatności
       const reservationIds: string[] = [];
-      for (const seat of seatNumbers) {
+      for (const seatObj of seatsWithPrice) {
+        const adjustedPrice = Math.max(0, seatObj.finalPrice - discountPerSeat);
         const res = await queryRunner.manager.query(
-          `INSERT INTO reservations (schedule_id, user_id, seat_number, status) 
-           VALUES ($1, $2, $3, 'Potwierdzona') RETURNING id`,
-          [scheduleId, userId, seat],
+          `INSERT INTO reservations (schedule_id, user_id, seat_number, status, discount_type, final_price) 
+           VALUES ($1, $2, $3, 'Potwierdzona', $4, $5) RETURNING id`,
+          [scheduleId, userId, seatObj.seatNumber, seatObj.discountType, adjustedPrice]
         );
         reservationIds.push(res[0].id);
+
+        const paymentStatus = dto.paymentMethod === 'ON_BOARD' ? 'Oczekująca' : 'Zakończona';
+        await queryRunner.manager.query(
+          `INSERT INTO payments (reservation_id, amount, status, payment_method)
+           VALUES ($1, $2, $3, $4)`,
+          [res[0].id, adjustedPrice, paymentStatus, dto.paymentMethod]
+        );
       }
 
       await queryRunner.commitTransaction();
@@ -189,7 +259,7 @@ export class ReservationsService {
   }
 
   async bookSeatsGuest(dto: GuestBookSeatsDto) {
-    const { scheduleId, seatNumbers, email, first_name, last_name, phone } = dto;
+    const { scheduleId, seats, email, first_name, last_name, phone } = dto;
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -285,11 +355,13 @@ export class ReservationsService {
       }
 
       // 3. Walidacja siedzeń
-      for (const seat of seatNumbers) {
-        if (seat < 1 || seat > capacity) {
-          throw new BadRequestException(`Miejsce ${seat} wykracza poza pojemność pojazdu (1-${capacity}).`);
+      for (const seatObj of seats) {
+        if (seatObj.seatNumber < 1 || seatObj.seatNumber > capacity) {
+          throw new BadRequestException(`Miejsce ${seatObj.seatNumber} wykracza poza pojemność pojazdu (1-${capacity}).`);
         }
       }
+
+      const seatNumbers = seats.map(s => s.seatNumber);
 
       // 4. Sprawdzenie zajętości
       const occupiedSeatsRes = await queryRunner.manager.query(
@@ -303,15 +375,36 @@ export class ReservationsService {
         throw new ConflictException(`Wybrane miejsca (${occupiedList}) są już zajęte.`);
       }
 
-      // 5. Zapis rezerwacji
+      // 5. Pobranie polityki cenowej
+      const policyRes = await queryRunner.manager.query(
+        `SELECT student_discount_percent, child_discount_percent FROM pricing_policies WHERE is_current = TRUE LIMIT 1`
+      );
+      const policy = policyRes[0] || { student_discount_percent: 51, child_discount_percent: 30 };
+      const basePrice = parseFloat(scheduleRes[0].price_base || '0');
+
+      // 6. Zapis rezerwacji
       const reservationIds: string[] = [];
-      for (const seat of seatNumbers) {
+      for (const seatObj of seats) {
+        let finalPrice = basePrice;
+        if (seatObj.discountType === 'STUDENT') {
+          finalPrice = basePrice * (1 - policy.student_discount_percent / 100);
+        } else if (seatObj.discountType === 'CHILD') {
+          finalPrice = basePrice * (1 - policy.child_discount_percent / 100);
+        }
+
         const res = await queryRunner.manager.query(
-          `INSERT INTO reservations (schedule_id, user_id, seat_number, status) 
-           VALUES ($1, $2, $3, 'Potwierdzona') RETURNING id`,
-          [scheduleId, userId, seat],
+          `INSERT INTO reservations (schedule_id, user_id, seat_number, status, discount_type, final_price) 
+           VALUES ($1, $2, $3, 'Potwierdzona', $4, $5) RETURNING id`,
+          [scheduleId, userId, seatObj.seatNumber, seatObj.discountType, finalPrice],
         );
         reservationIds.push(res[0].id);
+
+        const paymentStatus = dto.paymentMethod === 'ON_BOARD' ? 'Oczekująca' : 'Zakończona';
+        await queryRunner.manager.query(
+          `INSERT INTO payments (reservation_id, amount, status, payment_method)
+           VALUES ($1, $2, $3, $4)`,
+          [res[0].id, finalPrice, paymentStatus, dto.paymentMethod]
+        );
       }
 
       await queryRunner.commitTransaction();
@@ -364,7 +457,7 @@ export class ReservationsService {
   }
 
   async bookSeatsOnBehalf(clientId: string, dto: BookSeatsDto) {
-    const { scheduleId, seatNumbers } = dto;
+    const { scheduleId, seats } = dto;
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -430,11 +523,13 @@ export class ReservationsService {
       }
 
       // 3. Walidacja pojemności i poprawności numerów siedzeń
-      for (const seat of seatNumbers) {
-        if (seat < 1 || seat > capacity) {
-          throw new BadRequestException(`Miejsce ${seat} wykracza poza pojemność pojazdu (1-${capacity}).`);
+      for (const seatObj of seats) {
+        if (seatObj.seatNumber < 1 || seatObj.seatNumber > capacity) {
+          throw new BadRequestException(`Miejsce ${seatObj.seatNumber} wykracza poza pojemność pojazdu (1-${capacity}).`);
         }
       }
+
+      const seatNumbers = seats.map(s => s.seatNumber);
 
       // 4. Sprawdzenie czy wybrane miejsca są już zajęte
       const occupiedSeatsRes = await queryRunner.manager.query(
@@ -452,11 +547,19 @@ export class ReservationsService {
       const reservationIds: string[] = [];
 
       // 5. Zapis rezerwacji jako 'Opłacona' oraz utworzenie powiązanych płatności (natychmiastowych)
-      for (const seat of seatNumbers) {
+      // W Sekretariacie zwykle rezerwacja OnBehalf to brak zniżki lub ręcznie przypisana zniżka, my po prostu wpisujemy NORMAL i cenę bazową (albo używamy discount z dto)
+      for (const seatObj of seats) {
+        let finalPrice = priceBaseVal;
+        if (seatObj.discountType === 'STUDENT') {
+          finalPrice = priceBaseVal * (1 - 51 / 100);
+        } else if (seatObj.discountType === 'CHILD') {
+          finalPrice = priceBaseVal * (1 - 30 / 100);
+        }
+
         const res = await queryRunner.manager.query(
-          `INSERT INTO reservations (schedule_id, user_id, seat_number, status) 
-           VALUES ($1, $2, $3, 'Opłacona') RETURNING id`,
-          [scheduleId, clientId, seat],
+          `INSERT INTO reservations (schedule_id, user_id, seat_number, status, discount_type, final_price) 
+           VALUES ($1, $2, $3, 'Opłacona', $4, $5) RETURNING id`,
+          [scheduleId, clientId, seatObj.seatNumber, seatObj.discountType, finalPrice],
         );
         const reservationId = res[0].id;
         reservationIds.push(reservationId);
@@ -465,7 +568,7 @@ export class ReservationsService {
         await queryRunner.manager.query(
           `INSERT INTO payments (reservation_id, amount, status, payment_method)
            VALUES ($1, $2, 'Zakończona', 'Gotówka/Karta (Sekretariat)')`,
-          [reservationId, priceBaseVal],
+          [reservationId, finalPrice],
         );
       }
 

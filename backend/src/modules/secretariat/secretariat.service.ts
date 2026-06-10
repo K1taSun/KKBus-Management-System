@@ -8,7 +8,7 @@ import { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { PublicInfoService } from '../public-info/public-info.service';
 import { ReservationsService } from '../reservations/reservations.service';
 import { BookSeatsDto } from '../reservations/dto/book-seats.dto';
-const PdfPrinter = require('pdfmake');
+const pdfmake = require('pdfmake');
 
 @Injectable()
 export class SecretariatService {
@@ -304,7 +304,7 @@ export class SecretariatService {
       },
     };
 
-    const printer = new PdfPrinter(fonts);
+    pdfmake.setFonts(fonts);
 
     const tableBody: string[][] = [
       ['Data odjazdu', 'Trasa', 'Kierowca', 'Autobus', 'Pasażerów'],
@@ -342,8 +342,8 @@ export class SecretariatService {
       },
     };
 
-    const pdfDoc = printer.createPdfKitDocument(docDefinition);
-    return pdfDoc;
+    const pdfDoc = pdfmake.createPdf(docDefinition);
+    return await pdfDoc.getBuffer();
   }
 
   async getDashboardMetrics() {
