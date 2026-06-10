@@ -1,9 +1,9 @@
 ==========================================================
           RAPORT Z URUCHOMIENIA TESTÓW KKBUS              
-          Data: Wed Jun 10 22:37:42 CEST 2026
+          Data: Wed Jun 10 22:55:25 CEST 2026
 ==========================================================
 
-up to date, audited 540 packages in 923ms
+up to date, audited 540 packages in 844ms
 
 93 packages are looking for funding
   run `npm fund` for details
@@ -24,10 +24,22 @@ Run `npm audit` for details.
 > jest --config jest.config.json --selectProjects unit
 
 Running one project: unit
+PASS unit unit/reports.service.spec.ts
+PASS unit unit/reservations.service.spec.ts
+  ● Console
+
+    console.log
+      [SMTP MOCK] Wysłano bilet na maila użytkownika: user-uuid-1 dla rezerwacji: [res-id-1, res-id-2]
+
+      at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
+
+    console.log
+      [SMTP MOCK] Wysłano bilet na maila użytkownika: user-uuid-1 dla rezerwacji: [res-id-1]
+
+      at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
+
 PASS unit unit/loyalty.service.spec.ts
 PASS unit unit/schedules.service.spec.ts
-PASS unit unit/driver.service.spec.ts
-PASS unit unit/reports.service.spec.ts
 PASS unit unit/public-info.service.spec.ts
   ● Console
 
@@ -86,19 +98,7 @@ PASS unit unit/public-info.service.spec.ts
 
       at PublicInfoService.searchTimetable (../backend/src/modules/public-info/public-info.service.ts:129:15)
 
-PASS unit unit/reservations.service.spec.ts
-  ● Console
-
-    console.log
-      [SMTP MOCK] Wysłano bilet na maila użytkownika: user-uuid-1 dla rezerwacji: [res-id-1, res-id-2]
-
-      at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
-
-    console.log
-      [SMTP MOCK] Wysłano bilet na maila użytkownika: user-uuid-1 dla rezerwacji: [res-id-1]
-
-      at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
-
+PASS unit unit/driver.service.spec.ts
 PASS unit unit/owner.service.spec.ts
 PASS unit unit/secretariat.service.spec.ts
   ● Console
@@ -112,7 +112,7 @@ PASS unit unit/auth.service.spec.ts
   ● Console
 
     console.log
-      [SMTP MOCK] Wysyłanie e-maila aktywacyjnego na adres: new@example.com dla klienta: KKB-2026-315391. Token: 6701156b8525e434cc6bee67f0032c674eaa3286f07b4c00612139bc1db3b837
+      [SMTP MOCK] Wysyłanie e-maila aktywacyjnego na adres: new@example.com dla klienta: KKB-2026-592629. Token: f531352d588003b121ca8bb58d460f06e074397f0d827407392d1937d5f7f7cb
 
       at AuthService.sendActivationEmailMock (../backend/src/modules/auth/auth.service.ts:265:13)
 
@@ -120,7 +120,7 @@ PASS unit unit/auth.service.spec.ts
 Test Suites: 9 passed, 9 total
 Tests:       119 passed, 119 total
 Snapshots:   0 total
-Time:        5.202 s, estimated 7 s
+Time:        5.216 s, estimated 6 s
 Ran all test suites.
 
 [0;34m2. URUCHAMIANIE TESTÓW INTEGRACYJNYCH (Integration Tests)...[0m
@@ -138,9 +138,9 @@ PASS integration integration/reservations.integration.spec.ts
       at ReservationsService.sendReservationEmailMock (../backend/src/modules/reservations/reservations.service.ts:258:13)
 
     console.log
-      [SMTP GUEST MOCK] Wysłano bilet na maila gościa: guest@example.com (Numer Klienta: KKB-2026-490537)
+      [SMTP GUEST MOCK] Wysłano bilet na maila gościa: guest@example.com (Numer Klienta: KKB-2026-584073)
           Trasa: Kraków - Katowice
-          Odjazd: 11.06.2026, 22:37:51
+          Odjazd: 11.06.2026, 22:55:35
           Miejsce(a): 
           Rezerwacje: [guest-reservation-id]
 
@@ -150,7 +150,7 @@ PASS integration integration/auth.integration.spec.ts
   ● Console
 
     console.log
-      [SMTP MOCK] Wysyłanie e-maila aktywacyjnego na adres: test-integration@example.com dla klienta: KKB-2026-143033. Token: 073802262ed8d18383dae7fe916a8e23b07387c5c2de7400f03e3e240b95ed6b
+      [SMTP MOCK] Wysyłanie e-maila aktywacyjnego na adres: test-integration@example.com dla klienta: KKB-2026-935763. Token: 5621cb450438bfd6c317befc9d34a389fc1812c2ccf2786979df77bcd5244d34
 
       at AuthService.sendActivationEmailMock (../backend/src/modules/auth/auth.service.ts:265:13)
 
@@ -158,7 +158,7 @@ PASS integration integration/auth.integration.spec.ts
 Test Suites: 2 passed, 2 total
 Tests:       12 passed, 12 total
 Snapshots:   0 total
-Time:        3.074 s
+Time:        2.892 s, estimated 3 s
 Ran all test suites.
 
 [0;34m3. URUCHAMIANIE SCENARIUSZY E2E (End-to-End)...[0m
@@ -170,8 +170,8 @@ Ran all test suites.
 
 Uruchamianie Scenariusza: Rezerwacja Klienta...
   -> Poprawnie odrzucono rejestrację osoby poniżej 13 roku życia (HTTP 400)
-  -> Rejestrowanie użytkownika: e2e.client.60615@example.com...
-  -> Użytkownik zarejestrowany. Numer klienta: KKB-2026-249992
+  -> Rejestrowanie użytkownika: e2e.client.82920@example.com...
+  -> Użytkownik zarejestrowany. Numer klienta: KKB-2026-714042
   -> Logowanie...
   -> Zalogowano pomyślnie. Tokeny JWT odebrane w ciasteczkach HttpOnly.
   -> Pobieranie profilu...
@@ -180,7 +180,7 @@ Uruchamianie Scenariusza: Rezerwacja Klienta...
   -> Znaleziono pasujący kurs #1058 (odjazd: 12.06.2026, 06:00:00)
   -> Pobieranie szczegółów kursu #1058 w celu znalezienia wolnego miejsca...
   -> Rezerwacja wolnego miejsca numer 1...
-  -> Rezerwacja utworzona pomyślnie. ID: a1d69b36-ee3f-4b3f-9b70-b6b62bb86e45
+  -> Rezerwacja utworzona pomyślnie. ID: a8a2cd19-1baf-415f-ad87-e678a904cc4a
   -> Sprawdzanie historii rezerwacji...
   -> Rezerwacja poprawnie zarejestrowana w historii.
   -> Anulowanie rezerwacji...
@@ -188,7 +188,7 @@ Uruchamianie Scenariusza: Rezerwacja Klienta...
 ✅ Scenariusz: Rezerwacja Klienta zakończona sukcesem!
 
 Uruchamianie Scenariusza: Blokada Brute-Force...
-  -> Rejestrowanie użytkownika testowego: e2e.lockout.79223@example.com...
+  -> Rejestrowanie użytkownika testowego: e2e.lockout.99708@example.com...
   -> Próba logowania z błędnym hasłem [Próba 1/3]...
   -> Próba logowania z błędnym hasłem [Próba 2/3]...
   -> Próba logowania z błędnym hasłem [Próba 3/3 - powinna wywołać zawieszenie]...
@@ -208,21 +208,26 @@ Wszystkie testy E2E zakończone pomyślnie!
 Symulacja 50 współbieżnych użytkowników odpytujących API rozkładu jazdy...
 
 --- WYNIKI TESTU WYDAJNOŚCIOWEGO ---
-Całkowity czas wykonania serii:  408 ms
+Całkowity czas wykonania serii:  305 ms
 Liczba wysłanych żądań:          50
 Udane zapytania (HTTP 200):      50 (100.0%)
 Nieudane zapytania:              0 (0.0%)
-Minimalny czas odpowiedzi:       67 ms
-Maksymalny czas odpowiedzi:      401 ms
-Średni czas odpowiedzi (Avg):    248.3 ms
-Percentyl 50 (Mediana):          275 ms
-Percentyl 90 (p90):              392 ms
-Percentyl 99 (p99):              401 ms
+Minimalny czas odpowiedzi:       54 ms
+Maksymalny czas odpowiedzi:      298 ms
+Średni czas odpowiedzi (Avg):    198.1 ms
+Percentyl 50 (Mediana):          198 ms
+Percentyl 90 (p90):              290 ms
+Percentyl 99 (p99):              298 ms
 
 --- WERYFIKACJA WYMAGAŃ NIEFUNKCJONALNYCH (SLA) ---
 Wymaganie: Czas reakcji do 3.0s dla 30-50 współbieżnych użytkowników.
 ✅ STATUS: ZDANE (Czas reakcji mieści się w limitach SLA, brak błędów HTTP).
 ----------------------------------------------------
+
+[0;36m5. CZYSZCZENIE DANYCH TESTOWYCH (Database Cleanup)...[0m
+DELETE 0
+DELETE 0
+DELETE 2
 
 ==========================================================
                       PODSUMOWANIE                        

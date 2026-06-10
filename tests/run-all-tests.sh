@@ -37,6 +37,16 @@ echo -e "\n${BLUE}4. URUCHAMIANIE TESTÓW WYDAJNOŚCIOWYCH (Performance)...${NC}
 npm run test:perf 2>&1 | tee -a "$REPORT_FILE"
 PERF_STATUS=${PIPESTATUS[0]}
 
+# 5. CZYSZCZENIE DANYCH TESTOWYCH Z BAZY DANYCH
+if docker ps | grep -q "kkbus_db"; then
+  echo -e "\n${CYAN}5. CZYSZCZENIE DANYCH TESTOWYCH (Database Cleanup)...${NC}" | tee -a "$REPORT_FILE"
+  docker exec -i kkbus_db psql -U kkbus_user -d kkbus_db -c "
+    DELETE FROM failed_logins WHERE email LIKE 'e2e.%';
+    DELETE FROM system_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'e2e.%');
+    DELETE FROM users WHERE email LIKE 'e2e.%';
+  " 2>&1 | tee -a "$REPORT_FILE"
+fi
+
 echo -e "\n==========================================================" | tee -a "$REPORT_FILE"
 echo "                      PODSUMOWANIE                        " | tee -a "$REPORT_FILE"
 echo "==========================================================" | tee -a "$REPORT_FILE"

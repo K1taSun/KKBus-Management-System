@@ -1,84 +1,133 @@
-# KKBus - Zintegrowany System Zarządzania Firmą Transportową
+# 🚌 KKBus - Zintegrowany System Zarządzania Firmą Transportową
 
-![Licencja](https://img.shields.io/badge/licencja-MIT-green)
-![Technologie](https://img.shields.io/badge/stack-NestJS%20%7C%20Next.js%20%7C%20PostgreSQL-blue)
-![Docker](https://img.shields.io/badge/docker-ready-cyan)
+![Licencja](https://img.shields.io/badge/licencja-MIT-green?style=for-the-badge)
+![NestJS](https://img.shields.io/badge/backend-NestJS%20v10-red?style=for-the-badge&logo=nestjs)
+![NextJS](https://img.shields.io/badge/frontend-Next.js%20v16-black?style=for-the-badge&logo=nextdotjs)
+![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL%20v16-blue?style=for-the-badge&logo=postgresql)
+![Docker](https://img.shields.io/badge/docker-ready-cyan?style=for-the-badge&logo=docker)
 
 **Projekt realizowany w ramach:**  
-Katedra Informatyki Stosowanej M-7  
-Wydział Mechaniczny, Politechnika Krakowska im. T. Kościuszki
+Katedra Informatyki Stosowanej M-7, Wydział Mechaniczny  
+Politechnika Krakowska im. T. Kościuszki  
+*Autorzy:* **Nikita Parkovskyi** (Backend & DBA) oraz **Artur Orfin** (Frontend & QA)
 
-## 🚌 O Projekcie
-KKBus to profesjonalna platforma transportowa zaprojektowana dla firmy **KKBus sp. z o.o.**, obsługującej pasażerów na trasie **Kraków ↔ Katowice**. Celem systemu jest usprawnienie obsługi klientów oraz automatyzacja codziennych działań firmy. Aplikacja umożliwia kompleksową obsługę rezerwacji przejazdów, zarządzanie pracownikami, pojazdami i raportami.
+---
 
-Specyfikacja systemu stanowi podstawę do projektowania i implementacji zaawansowanego narzędzia wspierającego procesy biznesowe przewoźnika.
+## 📖 O Projekcie
 
-## 👥 Zespół Projektowy
-* **Nikita Parkovskyi** – Architekt Systemu, Backend Developer & DBA
-* **Artur Orfin** – Frontend Developer, UI/UX Designer & QA
+**KKBus** to kompleksowy system zarządzania i rezerwacji dla firmy przewozowej obsługującej kluczową trasę **Kraków ↔ Katowice**. Aplikacja eliminuje papierowy obieg dokumentów i automatyzuje kluczowe procesy biznesowe: od rezerwacji biletów przez pasażerów, przez zgłaszanie gotowości i raportowanie zużycia paliwa przez kierowców, aż po zaawansowane planowanie grafików, zarządzanie flotą i analitykę finansową.
 
-## 🛠 Stos Technologiczny
-Zgodnie z wymaganiami nowoczesnych aplikacji webowych, system został zrealizowany w następujących technologiach *(względem początkowych założeń specyfikacji opartych na PHP, zaktualizowano stos na bardziej wydajny i nowoczesny)*:
-* **Backend:** Node.js (NestJS) + TypeORM + PostgreSQL
-* **Frontend:** Next.js 15+ (App Router) + Tailwind CSS v4 + Framer Motion
-* **Infrastruktura:** Docker & Docker Compose
-* **Design:** Mobile-First, Modern UI, Glassmorphism
+---
 
-## 🚀 Kluczowe Funkcjonalności i Role w Systemie
-Aplikacja została zaprojektowana z myślą o czterech głównych grupach użytkowników (aktorach):
+## 🛠️ Architektura i Stos Technologiczny
 
-1. **Klient:**
-   - Rejestracja i logowanie (przeglądanie i edycja danych).
-   - Rezerwacja miejsc (najpóźniej 2h przed odjazdem) oraz anulowanie (najpóźniej 24h przed).
-   - Przystąpienie do programu lojalnościowego (1 km = 1 punkt) i wymiana punktów na nagrody/zniżki.
-   - Przeglądanie informacji o trasach, firmie i cenniku (dostępne również bez logowania).
+Projekt został zaprojektowany w architekturze monorepozytorium z wyraźnym podziałem na usługi backendowe i dedykowane interfejsy dla każdego z aktorów systemu:
 
-2. **Kierowca:**
-   - Podgląd własnego grafiku pracy (przypisane trasy i kursy).
-   - Zgłaszanie dyspozycyjności do pracy (dostępność/niedostępność).
-   - Dostęp do listy pasażerów przypisanych do kursu.
-   - Generowanie raportu z kursu (liczba pasażerów, koszt paliwa, przebieg) po jego zakończeniu.
+*   **Backend API:** Node.js z frameworkiem **NestJS** (v10), wykorzystujący **TypeORM** do komunikacji z bazą. Bezpieczeństwo zapewnia uwierzytelnianie oparte o ciasteczka **HttpOnly JWT** (AccessToken/RefreshToken) oraz hasła hashowane algorytmem **bcrypt**.
+*   **Baza Danych:** **PostgreSQL** (v16) uruchomiony w kontenerze Docker. Schemat i dane początkowe (Seed) są w pełni zautomatyzowane w skryptach SQL w katalogu `infra/`.
+*   **Interfejsy Użytkownika (Next.js v16 + Tailwind CSS v4 + Framer Motion):**
+    1.  **Panel Klienta (frontend-next):** Rezerwacje biletów, wyszukiwarka połączeń, program lojalnościowy i profil klienta.
+    2.  **Panel Kierowcy (frontend-driver):** Podgląd grafiku, manifest pasażerów (zgodny z RODO), zgłaszanie dyspozycyjności i raportowanie tras.
+    3.  **Panel Sekretariatu (frontend-secretariat):** Planowanie kursów, przydział pojazdów/kierowców, rejestracja klientów i zarządzanie flotą.
+    4.  **Panel Właściciela (frontend-owner):** Zaawansowane audyty logów, statystyki finansowe, zarządzanie pracownikami oraz edycja polityki cenowej.
 
-3. **Pracownik Sekretariatu:**
-   - Tworzenie i edycja grafików pracy kierowców oraz przypisywanie pojazdów do tras/kursów.
-   - Generowanie raportów z kursów, rezerwacji oraz wyników finansowych.
-   - Zakładanie kont klientów z poziomu panelu pracowniczego.
-   - Podgląd zgłoszonej dyspozycyjności kierowców.
+---
 
-4. **Właściciel (Administrator):**
-   - Pełne zarządzanie użytkownikami (klientami i pracownikami).
-   - Zarządzanie flotą pojazdów, trasami i kursami.
-   - Modyfikacja cennika oraz zasad i progów w programie lojalnościowym.
-   - Tworzenie grafików pracy i wgląd we wszystkie raporty analityczne oraz logi systemowe.
+## 🚀 Role w Systemie i Ich Uprawnienia
 
-## 🔐 Wymagania Niefunkcjonalne
-* **Wydajność:** Czas reakcji do 3 sekund, obsługa jednoczesnego dostępu 30-50 użytkowników.
-* **Dostępność:** Działanie online 24/7 (maksymalny czas niedostępności: 1 godzina miesięcznie).
-* **Bezpieczeństwo:** Certyfikat HTTPS, zaszyfrowane hasła, blokowanie konta po 3 błędnych próbach.
-* **Niezawodność:** Codzienne automatyczne kopie zapasowe, czas przywrócenia po awarii do 30 min.
+| Rola | Kluczowe Funkcjonalności |
+| :--- | :--- |
+| **Pasażer / Klient** | Wyszukiwanie kursów, rezerwacja miejsc do 2h przed odjazdem, anulowanie rezerwacji do 24h przed kursem, program lojalnościowy (zbieranie punktów za przebyte kilometry 1km = 1pkt), wymiana punktów na kody rabatowe. |
+| **Kierowca** | Podgląd osobistego grafiku, manifest pasażerów (bez danych RODO), zgłaszanie dyspozycyjności (statusy: *Dostępny, Niedostępny, Urlop, Zwolnienie*), składanie raportów po kursie (zużycie paliwa, koszt, faktyczni pasażerowie). |
+| **Pracownik Sekretariatu** | Układanie grafików dla kierowców, przydział autobusów do kursów, monitorowanie stanu pojazdów, zakładanie kont klientom, podgląd raportów. |
+| **Właściciel (Admin)** | Pełne zarządzanie kontami (aktywowanie, zawieszanie), edycja tras i cenników (polityka discountów), statystyki finansowe i zużycia paliwa, dostęp do logów audytowych. |
+
+---
 
 ## 📂 Struktura Projektu
+
 ```text
 KKBus-Management-System/
-├── backend/            # API Serwerowe (NestJS)
-│   └── src/modules/    # Auth, Reservations, Reports, Schedules
-├── frontend-next/      # Nowoczesny Interfejs (Next.js)
-│   └── src/app/        # Routing: (public), (auth), (client), (driver), (admin)
-├── infra/              # Konfiguracja Docker & PostgreSQL
-│   ├── docker-compose  # Orkiestracja całego stosu
-│   └── postgres-init/  # Skrypty inicjalizujące schemat i dane (Seed)
-└── docs/               # Dokumentacja techniczna i makiety
+├── backend/                  # Serwer API (NestJS)
+│   ├── src/modules/          # Moduły dziedzinowe (auth, reservations, schedules, loyalty, itp.)
+│   └── src/common/           # Filtry wyjątków, sensory i interceptory
+├── frontend-next/            # Panel Klienta (Next.js - port 3001)
+├── frontend-driver/          # Panel Kierowcy (Next.js - port 4040)
+├── frontend-secretariat/      # Panel Sekretariatu (Next.js - port 1010)
+├── frontend-owner/            # Panel Właściciela (Next.js - port 5050)
+├── infra/                    # Infrastruktura Docker i PostgreSQL
+│   ├── docker-compose.yml    # Plik orkiestracji kontenerów
+│   └── postgres-init/        # Skrypty SQL (tworzenie tabel, dane startowe, cenniki)
+├── tests/                    # Automatyczny Pakiet Testowy (Testing Suite)
+│   ├── unit/                 # Testy jednostkowe (Jest)
+│   ├── integration/          # Testy integracyjne API (Supertest + Mock-DB)
+│   ├── e2e/                  # Scenariusze przepływu danych (Axios na żywym API)
+│   └── performance/          # Testy SLA i obciążenia (50 współbieżnych połączeń)
+├── docs/                     # Dokumentacja techniczna i diagramy
+├── start.sh                  # Skrypt automatyzujący uruchamianie środowiska
+└── README.md                 # Główna dokumentacja projektu
 ```
 
-## 🛠 Jak uruchomić?
-System jest w pełni skonteneryzowany. Aby uruchomić cały stos technologiczny:
+---
 
-1. Upewnij się, że masz zainstalowany **Docker** i **Docker Compose**.
-2. W folderze głównym wykonaj komendę:
-   ```bash
-   docker-compose -f infra/docker-compose.yml up --build
-   ```
-3. Aplikacja będzie dostępna pod adresami:
-   - **Frontend:** http://localhost:3000
-   - **Backend API:** http://localhost:3000/api
-   - **pgAdmin:** http://localhost:5050 (Zarządzanie bazą)
+## 🛠️ Jak Uruchomić?
+
+Upewnij się, że masz zainstalowany program **Docker** oraz **Node.js** (jeśli uruchamiasz lokalnie).
+
+### Opcja 1: Uruchomienie Wszystkiego w Dockerze (Docker-Only)
+Idealne do szybkiego przetestowania aplikacji bez instalowania lokalnych zależności:
+```bash
+chmod +x start.sh
+./start.sh
+```
+Wybierz opcję **[1]** w menu. Aplikacja zbuduje wszystkie obrazy i uruchomi serwisy.
+*   **Aplikacja Klienta:** http://localhost:3000
+
+---
+
+### Opcja 2: Uruchomienie w Trybie Hybrydowym (Zalecane do Developmentu)
+Baza danych działa w tle w Dockerze, a backend i panele frontendowe działają lokalnie z automatycznym przeładowywaniem kodu (Hot Reload):
+```bash
+./start.sh
+```
+Wybierz opcję **[2]** w menu. Skrypt automatycznie uruchomi kontener bazy danych w tle, a następnie otworzy osobne okna terminala macOS i uruchomi w nich backend oraz poszczególne panele:
+*   **Backend API:** [http://localhost:3000/api](http://localhost:3000/api)
+*   **Panel Klienta:** [http://localhost:3001](http://localhost:3001)
+*   **Panel Sekretariatu:** [http://localhost:1010](http://localhost:1010)
+*   **Panel Kierowcy:** [http://localhost:4040](http://localhost:4040)
+*   **Panel Właściciela:** [http://localhost:5050](http://localhost:5050)
+
+Aby zatrzymać wszystkie uruchomione w tle kontenery, uruchom `./start.sh` i wybierz opcję **[3]**.
+
+---
+
+## 🧪 Automatyczny Pakiet Testowy (Testing Suite)
+
+System posiada w pełni zintegrowany zestaw testów znajdujący się w katalogu `tests/`.
+
+### 1. Podział Testów:
+*   **Unit (Jednostkowe):** 119 testów weryfikujących reguły biznesowe w pełnej izolacji (walidacja wieku pasażera >13 lat, naliczanie zniżek, blokowanie kont brute-force, strefy czasowe dostępności kierowców).
+*   **Integration (Integracyjne):** Sprawdzenie poprawności kontrolerów, filtrów wyjątków NestJS i serializacji obiektów DTO przy zautomatyzowanym mockowaniu zapytań SQL.
+*   **E2E (Scenariuszowe):** Przepływy end-to-end na żywej bazie danych. Testowana jest pełna rejestracja użytkownika, logowanie przez ciasteczka, wyszukanie wolnego kursu, poprawna rezerwacja miejsca, pobranie historii i anulowanie rezerwacji.
+*   **Performance (Wydajnościowe):** Symulacja 50 współbieżnych użytkowników odpytujących rozkład jazdy w celu weryfikacji warunków **SLA (< 3 sekund)**.
+
+### 2. Uruchomienie Testów i Automatyczne Sprzątanie Bazy:
+Przejdź do folderu `tests/` lub użyj skryptu głównego:
+```bash
+chmod +x tests/run-all-tests.sh
+./tests/run-all-tests.sh
+```
+**Kluczowe mechanizmy testowe:**
+1.  **Rozwiązanie problemu zablokowanych miejsc:** W bazie danych zamiast sztywnego ograniczenia `UNIQUE (schedule_id, seat_number)` zastosowano indeks częściowy:
+    ```sql
+    CREATE UNIQUE INDEX unique_active_reservation ON reservations (schedule_id, seat_number) WHERE (status != 'Anulowana');
+    ```
+    Dzięki tomu miejsca anulowane mogą być natychmiastowo zarezerwowane ponownie przez innych klientów, co eliminuje błędy duplikacji klucza.
+2.  **Automatyczne czyszczenie (Purge):** Na samym końcu przebiegu testów, skrypt automatycznie usuwa z bazy danych PostgreSQL wszelkie konta i rekordy powiązane z testami dynamicznymi (wszystkie rekordy o e-mailu zaczynającym się od `e2e.`), pozostawiając bazę danych w nienaruszonym stanie.
+3.  **Raportowanie:** Wynik jest zapisywany w czytelnym raporcie tekstowym [tests/test-report.txt](file:///Users/_k1tasun_/Documents/GitHub/KKBus-Management-System/tests/test-report.txt).
+
+---
+
+## 📄 Licencja
+
+Projekt jest udostępniany na warunkach licencji **MIT**. Szczegóły znajdują się w pliku `LICENSE`.
