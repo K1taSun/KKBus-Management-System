@@ -32,7 +32,7 @@ export default function SOSButton({ busId, scheduleId }: SOSButtonProps) {
         sendSOSWithLocation(latitude, longitude);
       },
       (error) => {
-        console.error("Błąd pobierania lokalizacji:", error);
+        console.error("Błąd pobierania lokalizacji:", error.message, `(kod: ${error.code})`);
         toast.error("Nie udało się pobrać lokalizacji GPS. Wysyłanie SOS bez koordynatów.");
         sendSOSWithoutLocation();
       },

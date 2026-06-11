@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { apiPost } from "@/lib/api";
 import { CheckSquare, ArrowRight, Loader2, Bus } from "lucide-react";
 
-export default function CheckInPage({ params }: { params: { scheduleId: string } }) {
+export default function CheckInPage({ params }: { params: Promise<{ scheduleId: string }> }) {
   const router = useRouter();
-  const scheduleId = parseInt(params.scheduleId, 10);
+  const unwrappedParams = use(params);
+  const scheduleId = parseInt(unwrappedParams.scheduleId, 10);
   const busId = 1; // W przyszłości pobierane z kontekstu kursu (getSchedules -> bus_id)
   
   const [loading, setLoading] = useState(false);

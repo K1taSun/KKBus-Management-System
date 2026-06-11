@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { apiGet } from "@/lib/api";
 import { FileText, ShieldCheck, AlertCircle, FileKey } from "lucide-react";
 
@@ -10,10 +10,11 @@ interface VehicleDocument {
   document_url: string;
 }
 
-export default function CyfrowaTeczkaPage({ params }: { params: { busId: string } }) {
+export default function CyfrowaTeczkaPage({ params }: { params: Promise<{ busId: string }> }) {
+  const unwrappedParams = use(params);
+  const busId = unwrappedParams.busId;
   const [documents, setDocuments] = useState<VehicleDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const busId = params.busId;
 
   useEffect(() => {
     async function fetchDocs() {
