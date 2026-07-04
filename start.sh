@@ -41,6 +41,16 @@ if [ "$choice" == "1" ]; then
 elif [ "$choice" == "2" ]; then
     echo -e "\n${BLUE}Uruchamianie projektu w trybie Hybrydowym...${NC}"
     
+    # Zwalnianie portów
+    echo -e "${YELLOW}Sprawdzanie i zwalnianie zajętych portów (3000, 3001, 4040, 1010, 5050)...${NC}"
+    for port in 3000 3001 4040 1010 5050; do
+        pid=$(lsof -t -i:$port)
+        if [ ! -z "$pid" ]; then
+            echo -e "Zwalnianie portu $port (PID: $pid)..."
+            kill -9 $pid 2>/dev/null
+        fi
+    done
+
     # 1. Uruchomienie bazy danych w Dockerze
     echo -e "${CYAN}1. Uruchamianie bazy danych PostgreSQL w kontenerze...${NC}"
     docker-compose -f infra/docker-compose.yml up -d db
@@ -49,21 +59,24 @@ elif [ "$choice" == "2" ]; then
     echo -e "${YELLOW}Czekanie na zainicjalizowanie bazy danych...${NC}"
     sleep 3
     
+    # Prefiks do wczytywania profili użytkownika w nowych oknach terminala
+    ENV_LOAD="[ -f ~/.zshrc ] && source ~/.zshrc; [ -f ~/.zprofile ] && source ~/.zprofile; [ -f ~/.bash_profile ] && source ~/.bash_profile; [ -f ~/.profile ] && source ~/.profile;"
+
     # 2. Uruchomienie backendu i frontendu w nowych oknach Terminala macOS
     echo -e "${CYAN}2. Uruchamianie Backend API w nowym oknie Terminala...${NC}"
-    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/backend' && npm install && npm run start:dev\""
+    osascript -e "tell app \"Terminal\" to do script \"$ENV_LOAD cd '$PWD/backend' && npm install && npm run start:dev\""
     
     echo -e "${CYAN}3. Uruchamianie Frontend Web w nowym oknie Terminala...${NC}"
-    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-next' && npm install && npm run dev -- -p 3001\""
+    osascript -e "tell app \"Terminal\" to do script \"$ENV_LOAD cd '$PWD/frontend-next' && npm install && npm run dev -- -p 3001\""
     
     echo -e "${CYAN}4. Uruchamianie Panelu Kierowcy (Frontend na porcie 4040) w nowym oknie Terminala...${NC}"
-    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-driver' && npm install && npm run dev -- -p 4040\""
+    osascript -e "tell app \"Terminal\" to do script \"$ENV_LOAD cd '$PWD/frontend-driver' && npm install && npm run dev -- -p 4040\""
     
     echo -e "${CYAN}5. Uruchamianie Modułu Sekretariatu (Frontend na porcie 1010) w nowym oknie Terminala...${NC}"
-    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-secretariat' && npm install && npm run dev\""
+    osascript -e "tell app \"Terminal\" to do script \"$ENV_LOAD cd '$PWD/frontend-secretariat' && npm install && npm run dev\""
 
     echo -e "${CYAN}6. Uruchamianie Modułu Właściciela (Frontend na porcie 5050) w nowym oknie Terminala...${NC}"
-    osascript -e "tell app \"Terminal\" to do script \"cd '$PWD/frontend-owner' && npm install && npm run dev\""
+    osascript -e "tell app \"Terminal\" to do script \"$ENV_LOAD cd '$PWD/frontend-owner' && npm install && npm run dev\""
 
     echo -e "\n${GREEN}Sukces! Baza danych działa w tle. Backend i frontendy zostały uruchomione w osobnych oknach Terminala.${NC}"
     echo -e "Linki do serwisów:"
