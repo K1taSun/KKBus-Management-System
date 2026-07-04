@@ -44,6 +44,49 @@ Projekt został zaprojektowany w architekturze monorepozytorium z wyraźnym podz
 
 ---
 
+## 📸 Zrzuty Ekranu (Prezentacja Systemu)
+
+### 1. Panel Klienta (frontend-next)
+<p align="center">
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.49.29.png" alt="Strona główna - wyszukiwanie połączeń" width="48%" />
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.49.46.png" alt="Strona główna - mapa połączeń" width="48%" />
+</p>
+<p align="center">
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.50.12.png" alt="Interaktywne filtry sieci połączeń" width="48%" />
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.54.04.png" alt="Dashboard klienta i punkty lojalnościowe" width="48%" />
+</p>
+<p align="center">
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.51.10.png" alt="Rejestracja nowego pasażera" width="31%" />
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.51.17.png" alt="Logowanie pasażera" width="31%" />
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.53.45.png" alt="Potwierdzenie rejestracji i karta klienta" width="31%" />
+</p>
+
+---
+
+### 2. Panel Kierowcy (frontend-driver)
+<p align="center">
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.39.53.png" alt="Dashboard kierowcy z listą kursów" width="31%" />
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.40.08.png" alt="Kalendarz deklaracji dyspozycyjności" width="31%" />
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.40.18.png" alt="Zgłaszanie awarii pojazdu" width="31%" />
+</p>
+
+---
+
+### 3. Panel Sekretariatu (frontend-secretariat)
+<p align="center">
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.54.36.png" alt="Panel sekretariatu - rezerwacje i status floty" width="90%" />
+</p>
+
+---
+
+### 4. Panel Właściciela (frontend-owner)
+<p align="center">
+  <img src="screenshots/Screenshot%202026-07-04%20at%2022.55.54.png" alt="Panel właściciela - statystyki i dziennik zdarzeń audit log" width="90%" />
+</p>
+
+---
+
+
 ## 📂 Struktura Projektu
 
 ```text
